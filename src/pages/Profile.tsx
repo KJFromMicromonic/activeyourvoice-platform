@@ -1,22 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Camera, Check, ChevronRight, Trophy, Users, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
-const profileSteps = [
-  { label: "Upload photo", done: true },
-  { label: "Add your name", done: true },
-  { label: "Write a bio", done: false },
-  { label: "Select skills", done: true },
-  { label: "Add company & role", done: false },
-  { label: "LinkedIn URL", done: false },
-  { label: "Dietary needs", done: false },
-  { label: "What you're looking for", done: true },
-];
+const PROFILE_STEPS = [
+  { label: "Upload photo", field: "avatar_url" },
+  { label: "Add your name", field: "first_name" },
+  { label: "Write a bio", field: "bio" },
+  { label: "Select skills", field: "skills" },
+  { label: "Add company & role", field: "company" },
+  { label: "LinkedIn URL", field: "linkedin" },
+  { label: "Dietary needs", field: "dietary" },
+  { label: "What you're looking for", field: "looking_for" },
+] as const;
 
-const completedCount = profileSteps.filter((s) => s.done).length;
-const completionPct = Math.round((completedCount / profileSteps.length) * 100);
+const isFieldFilled = (profile: any, field: string) => {
+  const val = profile?.[field];
+  if (Array.isArray(val)) return val.length > 0;
+  return !!val && String(val).trim() !== "";
+};
 
 const earnedBadges = [
   { icon: "🌅", name: "Early Bird", desc: "Among first 20 to register", date: "Feb 15" },
@@ -32,6 +36,38 @@ const lockedBadges = [
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState<"profile" | "badges" | "team">("profile");
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) setProfile(data);
+    };
+    fetchProfile();
+  }, []);
+
+  const steps = PROFILE_STEPS.map((s) => ({
+    label: s.label,
+    done: isFieldFilled(profile, s.field),
+  }));
+  const completedCount = steps.filter((s) => s.done).length;
+  const completionPct = Math.round((completedCount / steps.length) * 100);
+
+  const displayName = profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Builder" : "Builder";
+  const initials = profile ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "B" : "B";
+  const points = profile?.points ?? 0;
+
+  const infoFields = [
+    { label: "Bio", value: profile?.bio },
+    { label: "Skills", value: Array.isArray(profile?.skills) && profile.skills.length > 0 ? profile.skills.join(", ") : null },
+    { label: "Company", value: profile?.company },
+    { label: "Role", value: profile?.role },
+    { label: "LinkedIn", value: profile?.linkedin },
+    { label: "Dietary Needs", value: profile?.dietary },
+    { label: "Looking for", value: Array.isArray(profile?.looking_for) && profile.looking_for.length > 0 ? profile.looking_for.join(", ") : null },
+  ];
 
   return (
     <div className="px-5 pt-12 pb-6 max-w-lg mx-auto space-y-6">
@@ -43,20 +79,24 @@ const Profile = () => {
         className="flex flex-col items-center text-center gap-3"
       >
         <div className="relative">
-          <div className="w-24 h-24 rounded-full gradient-primary flex items-center justify-center text-3xl font-bold text-white glow-avatar">
-            B
+          <div className="w-24 h-24 rounded-full gradient-primary flex items-center justify-center text-3xl font-bold text-white glow-avatar overflow-hidden">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
           </div>
           <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg">
             <Camera className="w-4 h-4 text-white" />
           </button>
         </div>
         <div>
-          <h1 className="text-xl font-bold">Builder</h1>
-          <p className="text-sm text-muted-foreground">builder@email.com</p>
+          <h1 className="text-xl font-bold">{displayName}</h1>
+          <p className="text-sm text-muted-foreground">{profile?.role || ""}{profile?.role && profile?.company ? " at " : ""}{profile?.company || ""}</p>
         </div>
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold gradient-text">60 points</span>
+          <span className="text-sm font-semibold gradient-text">{points} points</span>
         </div>
       </motion.div>
 
@@ -80,10 +120,10 @@ const Profile = () => {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          You're {completionPct}% crew-ready! Add your bio to complete your profile ✨
+          You're {completionPct}% crew-ready! {completionPct < 100 ? "Complete your profile to stand out ✨" : "Looking great! 🎉"}
         </p>
         <div className="space-y-2 pt-1">
-          {profileSteps.map((step, i) => (
+          {steps.map((step, i) => (
             <div key={i} className="flex items-center gap-3 text-sm">
               <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${step.done ? "gradient-primary" : "bg-muted"}`}>
                 {step.done && <Check className="w-3 h-3 text-white" />}
@@ -114,21 +154,12 @@ const Profile = () => {
       {/* My Info */}
       {activeTab === "profile" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-          {[
-            { label: "Bio", value: "Not set yet", placeholder: "What's your superpower in one line?" },
-            { label: "Skills", value: "Full-stack, AI/ML, Frontend" },
-            { label: "Company", value: "Not set yet" },
-            { label: "Role", value: "Not set yet" },
-            { label: "LinkedIn", value: "Not set yet" },
-            { label: "Languages", value: "English, French" },
-            { label: "Dietary Needs", value: "Not set yet" },
-            { label: "Looking for", value: "A team, Networking" },
-          ].map((field, i) => (
+          {infoFields.map((field, i) => (
             <div key={i} className="glass-card-hover p-4 flex items-center justify-between cursor-pointer">
               <div>
                 <p className="text-xs text-muted-foreground">{field.label}</p>
-                <p className={`text-sm ${field.value === "Not set yet" ? "text-muted-foreground/50 italic" : "text-foreground"}`}>
-                  {field.value}
+                <p className={`text-sm ${!field.value ? "text-muted-foreground/50 italic" : "text-foreground"}`}>
+                  {field.value || "Not set yet"}
                 </p>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -174,13 +205,17 @@ const Profile = () => {
             <Rocket className="w-8 h-8 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="font-semibold">You're flying solo</h3>
-            <p className="text-sm text-muted-foreground mt-1">Find your crew and build something amazing together!</p>
+            <h3 className="font-semibold">{profile?.team_status === "Yes" ? "You're in a team!" : "You're flying solo"}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {profile?.team_status === "Yes" ? "Great — you're ready to build!" : "Find your crew and build something amazing together!"}
+            </p>
           </div>
-          <Button variant="gradient" className="rounded-xl">
-            <Users className="w-4 h-4" />
-            Find a Team
-          </Button>
+          {profile?.team_status !== "Yes" && (
+            <Button variant="gradient" className="rounded-xl">
+              <Users className="w-4 h-4" />
+              Find a Team
+            </Button>
+          )}
         </motion.div>
       )}
     </div>

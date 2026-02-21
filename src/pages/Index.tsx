@@ -4,6 +4,7 @@ import { ArrowRight, Users, Rocket, Calendar, Send, Pin, Sparkles, Trophy, Clock
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
 const TARGET_DATE = new Date("2026-02-28T15:00:00+01:00");
 
@@ -24,6 +25,24 @@ const useCountdown = () => {
     return () => clearInterval(id);
   }, []);
   return timeLeft;
+};
+
+const PROFILE_FIELDS = [
+  "first_name", "last_name", "avatar_url", "bio", "company", "role", "linkedin", "dietary", "team_status",
+] as const;
+const PROFILE_ARRAY_FIELDS = ["skills", "looking_for"] as const;
+
+const calcCompletion = (profile: any) => {
+  if (!profile) return 0;
+  let filled = 0;
+  const total = PROFILE_FIELDS.length + PROFILE_ARRAY_FIELDS.length;
+  for (const f of PROFILE_FIELDS) {
+    if (profile[f] && String(profile[f]).trim()) filled++;
+  }
+  for (const f of PROFILE_ARRAY_FIELDS) {
+    if (Array.isArray(profile[f]) && profile[f].length > 0) filled++;
+  }
+  return Math.round((filled / total) * 100);
 };
 
 const quickActions = [
@@ -58,10 +77,27 @@ const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
 );
 
 const Index = () => {
-  // Auth guard in App.tsx handles onboarding redirect
   const countdown = useCountdown();
   const navigate = useNavigate();
-  const profileCompletion = 35;
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) setProfile(data);
+    };
+    fetchProfile();
+  }, []);
+
+  const profileCompletion = calcCompletion(profile);
+  const displayName = profile?.first_name?.trim() || "Builder";
+  const points = profile?.points ?? 0;
+  const teamStatusText = profile?.team_status === "Yes"
+    ? "In a team"
+    : "Solo — no team yet";
+  const teamDotColor = profile?.team_status === "Yes" ? "bg-green-500" : "bg-destructive";
 
   return (
     <div className="px-5 pt-12 pb-6 max-w-lg mx-auto space-y-6">
@@ -72,7 +108,7 @@ const Index = () => {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-2xl font-bold">
-          Welcome back, <span className="gradient-text">Builder</span> 👋
+          Welcome back, <span className="gradient-text">{displayName}</span> 👋
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           In 2026, the interface is no longer a screen — it is a conversation.
@@ -123,8 +159,12 @@ const Index = () => {
         </div>
         <div className="flex gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-destructive" />
-            <span className="text-muted-foreground">Solo — no team yet</span>
+            <div className={`w-2 h-2 rounded-full ${teamDotColor}`} />
+            <span className="text-muted-foreground">{teamStatusText}</span>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <Trophy className="w-3.5 h-3.5 text-primary" />
+            <span className="gradient-text font-semibold">{points} pts</span>
           </div>
         </div>
       </motion.div>
