@@ -16,11 +16,13 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          allergies_detail: string | null
           avatar_url: string | null
           bio: string | null
           company: string | null
           created_at: string
           dietary: string | null
+          drinks_beer: string | null
           expectations: string | null
           feedback: string | null
           first_name: string
@@ -29,20 +31,24 @@ export type Database = {
           last_name: string
           linkedin: string | null
           looking_for: string[] | null
+          meat_preference: string | null
           onboarding_completed: boolean
           points: number
           role: string | null
           skills: string[] | null
+          staying_overnight: string | null
           team_status: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          allergies_detail?: string | null
           avatar_url?: string | null
           bio?: string | null
           company?: string | null
           created_at?: string
           dietary?: string | null
+          drinks_beer?: string | null
           expectations?: string | null
           feedback?: string | null
           first_name?: string
@@ -51,20 +57,24 @@ export type Database = {
           last_name?: string
           linkedin?: string | null
           looking_for?: string[] | null
+          meat_preference?: string | null
           onboarding_completed?: boolean
           points?: number
           role?: string | null
           skills?: string[] | null
+          staying_overnight?: string | null
           team_status?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          allergies_detail?: string | null
           avatar_url?: string | null
           bio?: string | null
           company?: string | null
           created_at?: string
           dietary?: string | null
+          drinks_beer?: string | null
           expectations?: string | null
           feedback?: string | null
           first_name?: string
@@ -73,10 +83,12 @@ export type Database = {
           last_name?: string
           linkedin?: string | null
           looking_for?: string[] | null
+          meat_preference?: string | null
           onboarding_completed?: boolean
           points?: number
           role?: string | null
           skills?: string[] | null
+          staying_overnight?: string | null
           team_status?: string | null
           updated_at?: string
           user_id?: string

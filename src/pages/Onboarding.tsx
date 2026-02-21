@@ -13,10 +13,12 @@ import MeshBackground from "@/components/MeshBackground";
 import Waveform from "@/components/Waveform";
 
 const SKILLS = ["Frontend", "Backend", "Full-stack", "AI/ML", "Design", "Product", "Data Science", "DevOps", "Business/Strategy", "Voice/NLP", "Other"];
-const LANGUAGES = ["English", "French", "Spanish", "German", "Arabic", "Mandarin", "Portuguese", "Italian", "Japanese", "Korean", "Hindi", "Russian", "Other"];
+const DIETARY_OPTIONS = ["Vegetarian", "Vegan", "Allergies", "No"];
+const MEAT_OPTIONS = ["Chicken", "Beef", "Fish", "Any meats"];
+const YES_NO = ["Yes", "No"];
 const LOOKING_FOR = ["A team", "A co-founder", "A job/new opportunity", "Networking", "Just here to build and have fun"];
 const TEAM_OPTIONS = ["Yes", "No", "Not yet"];
-const DIETARY = ["None", "Vegetarian", "Vegan", "Halal", "Kosher", "Gluten-free", "Other"];
+
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
@@ -43,7 +45,10 @@ const Onboarding = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [linkedin, setLinkedin] = useState("");
   const [dietary, setDietary] = useState("");
-  const [languages, setLanguages] = useState<string[]>([]);
+  const [allergiesDetail, setAllergiesDetail] = useState("");
+  const [meatPreference, setMeatPreference] = useState("");
+  const [drinksBeer, setDrinksBeer] = useState("");
+  const [stayingOvernight, setStayingOvernight] = useState("");
   const [lookingFor, setLookingFor] = useState<string[]>([]);
   const [teamStatus, setTeamStatus] = useState("");
   const [bio, setBio] = useState("");
@@ -64,7 +69,7 @@ const Onboarding = () => {
     switch (step) {
       case 1: return firstName.trim() && lastName.trim();
       case 2: return skills.length > 0;
-      case 3: return dietary && languages.length > 0;
+      case 3: return !!dietary && !!drinksBeer && !!stayingOvernight;
       case 4: return lookingFor.length > 0 && teamStatus;
       default: return true;
     }
@@ -111,7 +116,10 @@ const Onboarding = () => {
         skills,
         linkedin: linkedin || null,
         dietary: dietary || null,
-        languages,
+        allergies_detail: allergiesDetail || null,
+        meat_preference: meatPreference || null,
+        drinks_beer: drinksBeer || null,
+        staying_overnight: stayingOvernight || null,
         looking_for: lookingFor,
         team_status: teamStatus || null,
         bio: bio || null,
@@ -310,7 +318,7 @@ const Onboarding = () => {
                 </div>
               )}
 
-              {/* Step 3 — Dietary + Languages */}
+              {/* Step 3 — Dietary + Logistics */}
               {step === 3 && (
                 <div className="space-y-6">
                   <div>
@@ -320,20 +328,91 @@ const Onboarding = () => {
                     <p className="text-sm text-muted-foreground mt-2">Good food, good vibes — we've got you covered</p>
                   </div>
                   <div className="gradient-primary h-px w-16 rounded-full" />
+
+                  {/* Q1: Dietary restrictions */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Dietary needs *</label>
-                    <Select value={dietary} onValueChange={setDietary}>
-                      <SelectTrigger className="glass-input">
-                        <SelectValue placeholder="Select dietary needs" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DIETARY.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <label className="text-sm font-medium mb-2 block">Do you have any dietary restrictions? *</label>
+                    <div className="flex flex-wrap gap-2">
+                      {DIETARY_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            setDietary(opt);
+                            if (opt !== "Allergies") setAllergiesDetail("");
+                            if (opt !== "No") setMeatPreference("");
+                          }}
+                          className={dietary === opt ? "pill-button-active" : "pill-button"}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Q2: Allergy details (conditional) */}
+                  {dietary === "Allergies" && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">If yes to allergies, please list below.</label>
+                      <Input
+                        placeholder="e.g. nuts, shellfish, dairy..."
+                        value={allergiesDetail}
+                        onChange={(e) => setAllergiesDetail(e.target.value)}
+                        className="glass-input"
+                      />
+                    </div>
+                  )}
+
+                  {/* Q3: Meat preference (conditional) */}
+                  {dietary === "No" && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">If not, any preferences?</label>
+                      <div className="flex flex-wrap gap-2">
+                        {MEAT_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setMeatPreference(opt)}
+                            className={meatPreference === opt ? "pill-button-active" : "pill-button"}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Q4: Beer */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Spoken languages *</label>
-                    {renderPills(LANGUAGES, languages, setLanguages)}
+                    <label className="text-sm font-medium mb-2 block">Do you drink beer? *</label>
+                    <div className="flex gap-2">
+                      {YES_NO.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setDrinksBeer(opt)}
+                          className={`flex-1 ${drinksBeer === opt ? "pill-button-active" : "pill-button"}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q5: Staying overnight */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Are you planning to stay overnight at the Builders Factory? *</label>
+                    <div className="flex gap-2">
+                      {YES_NO.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setStayingOvernight(opt)}
+                          className={`flex-1 ${stayingOvernight === opt ? "pill-button-active" : "pill-button"}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground italic mt-2">
+                      No beds provided — but couches and quiet zones available. You may bring equipment for better rest.
+                    </p>
                   </div>
                 </div>
               )}
