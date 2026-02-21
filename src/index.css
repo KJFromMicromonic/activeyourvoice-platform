@@ -141,6 +141,20 @@
     100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
   }
 
+  @keyframes pulse-amber {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+  }
+
+  .pulse-amber {
+    animation: pulse-amber 2s ease-in-out infinite;
+  }
+
+  .glow-border {
+    border-color: hsl(263 84% 58% / 0.25) !important;
+    box-shadow: 0 0 20px hsl(263 84% 58% / 0.12), 0 0 40px hsl(217 91% 60% / 0.06);
+  }
+
 
   @keyframes subtle-pulse {
     0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 25px hsl(263 84% 58% / 0.3), 0 0 50px hsl(217 91% 60% / 0.15); }
