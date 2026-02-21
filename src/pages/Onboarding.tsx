@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const SKILLS = ["Frontend", "Backend", "Full-stack", "AI/ML", "Design", "Product", "Data Science", "DevOps", "Business/Strategy", "Voice/NLP", "Other"];
 const LANGUAGES = ["English", "French", "Spanish", "German", "Arabic", "Mandarin", "Portuguese", "Italian", "Japanese", "Korean", "Hindi", "Russian", "Other"];
@@ -24,6 +26,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [saving, setSaving] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -39,6 +42,11 @@ const Onboarding = () => {
   const [expectations, setExpectations] = useState("");
   const [feedback, setFeedback] = useState("");
   const [showPoints, setShowPoints] = useState(false);
+
+  // Photo upload
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const goNext = () => { setDirection(1); setStep((s) => s + 1); };
   const goBack = () => { setDirection(-1); setStep((s) => s - 1); };
@@ -57,15 +65,86 @@ const Onboarding = () => {
     setter(arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val]);
   };
 
-  const finish = () => {
-    localStorage.setItem("onboarding_completed", "true");
-    setShowPoints(true);
-    setTimeout(() => navigate("/"), 2500);
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const handleNext = () => {
-    if (step === 5) { goNext(); setTimeout(() => setShowPoints(true), 500); }
-    else goNext();
+  const saveProfile = async () => {
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error("Not authenticated"); setSaving(false); return; }
+
+      let avatar_url: string | null = null;
+
+      // Upload avatar if selected
+      if (avatarFile) {
+        const ext = avatarFile.name.split(".").pop();
+        const path = `${user.id}/avatar.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(path, avatarFile, { upsert: true });
+        if (uploadError) {
+          console.error("Avatar upload error:", uploadError);
+        } else {
+          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+          avatar_url = urlData.publicUrl;
+        }
+      }
+
+      const { error } = await supabase.from("profiles").update({
+        first_name: firstName,
+        last_name: lastName,
+        avatar_url,
+        skills,
+        linkedin: linkedin || null,
+        dietary: dietary || null,
+        languages,
+        looking_for: lookingFor,
+        team_status: teamStatus || null,
+        bio: bio || null,
+        company: company || null,
+        role: role || null,
+        expectations: expectations || null,
+        feedback: feedback || null,
+        onboarding_completed: true,
+        points: 50,
+      }).eq("user_id", user.id);
+
+      if (error) {
+        toast.error("Failed to save profile");
+        console.error(error);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong");
+    }
+    setSaving(false);
+  };
+
+  const finish = () => {
+    navigate("/");
+  };
+
+  const handleNext = async () => {
+    if (step === 5) {
+      await saveProfile();
+      goNext();
+      setTimeout(() => setShowPoints(true), 500);
+    } else {
+      goNext();
+    }
+  };
+
+  const handleSkip = async () => {
+    await saveProfile();
+    goNext();
+    setTimeout(() => setShowPoints(true), 500);
   };
 
   const renderPills = (options: string[], selected: string[], setter: (v: string[]) => void) => (
@@ -84,7 +163,6 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress bar for steps 1-5 */}
       {step >= 1 && step <= 5 && (
         <div className="px-5 pt-4">
           <Progress value={(step / 5) * 100} className="h-2 bg-muted" />
@@ -136,11 +214,25 @@ const Onboarding = () => {
                   <p className="text-sm text-muted-foreground mt-1">Let's put a face to the name</p>
                 </div>
                 <div className="flex justify-center">
-                  <div className="relative w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer glow-ring">
-                    <Camera className="w-8 h-8 text-muted-foreground" />
+                  <div
+                    className="relative w-24 h-24 rounded-full bg-muted flex items-center justify-center cursor-pointer glow-ring overflow-hidden"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera className="w-8 h-8 text-muted-foreground" />
+                    )}
                     <div className="absolute bottom-0 right-0 w-7 h-7 rounded-full gradient-primary flex items-center justify-center">
                       <span className="text-xs text-primary-foreground">+</span>
                     </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoSelect}
+                    />
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -296,17 +388,17 @@ const Onboarding = () => {
           </Button>
           <div className="flex-1 flex gap-2">
             {step === 5 && (
-              <Button variant="ghost" className="flex-1 text-muted-foreground text-sm" onClick={() => { goNext(); setTimeout(() => setShowPoints(true), 500); }}>
+              <Button variant="ghost" className="flex-1 text-muted-foreground text-sm" onClick={handleSkip} disabled={saving}>
                 Skip for now
               </Button>
             )}
             <Button
               variant="gradient"
               className="flex-1"
-              disabled={!canProceed()}
+              disabled={!canProceed() || saving}
               onClick={handleNext}
             >
-              {step === 5 ? "Finish" : "Next"} <ChevronRight className="w-4 h-4 ml-1" />
+              {saving ? "Saving..." : step === 5 ? "Finish" : "Next"} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>

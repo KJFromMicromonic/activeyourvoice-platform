@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          company: string | null
+          created_at: string
+          dietary: string | null
+          expectations: string | null
+          feedback: string | null
+          first_name: string
+          id: string
+          languages: string[] | null
+          last_name: string
+          linkedin: string | null
+          looking_for: string[] | null
+          onboarding_completed: boolean
+          points: number
+          role: string | null
+          skills: string[] | null
+          team_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          dietary?: string | null
+          expectations?: string | null
+          feedback?: string | null
+          first_name?: string
+          id?: string
+          languages?: string[] | null
+          last_name?: string
+          linkedin?: string | null
+          looking_for?: string[] | null
+          onboarding_completed?: boolean
+          points?: number
+          role?: string | null
+          skills?: string[] | null
+          team_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          dietary?: string | null
+          expectations?: string | null
+          feedback?: string | null
+          first_name?: string
+          id?: string
+          languages?: string[] | null
+          last_name?: string
+          linkedin?: string | null
+          looking_for?: string[] | null
+          onboarding_completed?: boolean
+          points?: number
+          role?: string | null
+          skills?: string[] | null
+          team_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
