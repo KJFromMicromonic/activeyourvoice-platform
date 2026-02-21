@@ -99,13 +99,24 @@ const Waveform = () => (
 );
 
 const Auth = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("remembered_email") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(() => localStorage.getItem("remember_me") !== "false");
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<ViewState>("splash");
   const [mode, setMode] = useState<AuthMode>("signin");
+
+  // Persist remember-me preference and email
+  useEffect(() => {
+    if (rememberMe && email) {
+      localStorage.setItem("remembered_email", email);
+      localStorage.setItem("remember_me", "true");
+    } else if (!rememberMe) {
+      localStorage.removeItem("remembered_email");
+      localStorage.setItem("remember_me", "false");
+    }
+  }, [rememberMe, email]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
