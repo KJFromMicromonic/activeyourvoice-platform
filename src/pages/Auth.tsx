@@ -210,7 +210,7 @@ const Auth = () => {
               transition={{ duration: 0.5, delay: 0.9 }}
               className="mt-6 text-sm font-bold text-foreground tracking-wide"
             >
-              100 builders. 24 hours. 1 mission.
+              100 builders. 1 house. €100,000 prizes. 24 hours.
             </motion.p>
 
             {/* Quote */}
