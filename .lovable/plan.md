@@ -1,73 +1,67 @@
 
 
-# Redesign Onboarding Step 3 -- "We want to take care of you"
+# Fix "Enter the Hub" + Connect Pages to Real Data
 
 ## Overview
-Replace the current dietary dropdown + language pills on Step 3 with 5 new questions, some with conditional visibility. Languages are removed from this step entirely.
+The "Enter the Hub" button already navigates to "/" and saves profile data correctly. The core issues are: (1) unauthenticated users (via "Don't log in") hit errors on save, (2) the Home/People/Profile pages show hardcoded mock data instead of real database data, and (3) there are no `teams` or `project_ideas` tables yet for the Teams page.
 
-## Database Changes
+## Changes
 
-Add 3 new columns to the `profiles` table via migration:
+### 1. Onboarding.tsx -- Guard the save for unauthenticated users
+- In `saveProfile`, if no authenticated user is found, skip the database save gracefully and still navigate to "/". This handles the "Don't log in" bypass path.
+- The `finish` function (`navigate("/")`) already works correctly for authenticated users since `onboarding_completed: true` is set during step 5.
 
-- `allergies_detail` (text, nullable) -- free text for allergy details
-- `meat_preference` (text, nullable) -- chicken/beef/fish/any meats
-- `drinks_beer` (text, nullable) -- yes/no
-- `staying_overnight` (text, nullable) -- yes/no
+### 2. Index.tsx (Home Dashboard) -- Show real user data
+- Fetch the current user's profile from the `profiles` table on mount.
+- Display their real `first_name` in the welcome banner ("Welcome back, Sarah").
+- Calculate real profile completion % based on which fields are filled (first_name, last_name, avatar_url, bio, skills, company, role, linkedin, dietary, looking_for, team_status).
+- Show real team status ("Solo" vs team name) from `team_status`.
+- Show real points from `profiles.points`.
 
-The existing `dietary` column will store the answer to Q1 (Vegetarian/Vegan/Allergies/No).
+### 3. People.tsx -- Fetch real profiles from database
+- Replace the `mockPeople` array with a query to `profiles` table: `supabase.from("profiles").select("*").eq("onboarding_completed", true)`.
+- Map profile fields to the card UI: `first_name + last_name` for name, `bio`, `skills`, `company`, `avatar_url` (or initials fallback), and `team_status` to determine "Looking for team" badge.
+- Keep the search and skill filter functionality working against real data.
 
-## Frontend Changes (src/pages/Onboarding.tsx)
+### 4. Profile.tsx -- Show current user's saved data
+- Fetch the authenticated user's profile from `profiles` table on mount.
+- Display real values in the "My Info" tab (bio, skills, company, role, linkedin, dietary, looking_for).
+- Calculate real profile completion steps (which fields are filled vs empty).
+- Show real points and avatar.
 
-### New State Variables
-- `allergiesDetail` (string) -- text field for allergy list
-- `meatPreference` (string) -- single select
-- `drinksBeer` (string) -- single select
-- `stayingOvernight` (string) -- single select
+### 5. Teams.tsx -- Keep mock data (no tables exist)
+- The `teams` and `project_ideas` tables don't exist in the database yet. Creating them is a separate feature.
+- Keep the current mock data for tracks and project ideas as placeholder content.
+- No database changes needed for this page right now.
 
-Remove: `languages` state, `LANGUAGES` constant, and language-related code from step 3.
+### 6. No database changes required
+- All needed columns already exist in the `profiles` table.
+- `onboarding_completed` is already being set to `true` in the save function.
+- The AuthGuard in `App.tsx` already checks `onboarding_completed` and prevents re-showing onboarding on subsequent logins.
 
-### Step 3 UI (replaces current content)
+---
 
-All questions use the same pill-button pattern for single-select options:
+## Technical Details
 
-1. **"Do you have any dietary restrictions?"** (required, single-select pills)
-   - Vegetarian / Vegan / Allergies / No
-   - Stored in `dietary`
+### Profile Completion Calculation (Index.tsx + Profile.tsx)
+```text
+Fields checked: first_name, last_name, avatar_url, bio, skills (length > 0),
+company, role, linkedin, dietary, looking_for (length > 0), team_status
+Completion % = (filled fields / total fields) * 100
+```
 
-2. **"If yes to allergies, please list below."** (text input)
-   - Only visible when `dietary === "Allergies"`
-   - Stored in `allergiesDetail`
+### People.tsx Query
+```text
+SELECT * FROM profiles WHERE onboarding_completed = true
+- Map to card: first_name + last_name, bio, skills[], company, avatar_url
+- "Looking for team" badge shown when team_status = "No" or "Not yet"
+- Search filters on name, bio, company
+- Skill filter checks skills[] array
+```
 
-3. **"If not, any preferences?"** (single-select pills)
-   - Only visible when `dietary === "No"`
-   - Chicken / Beef / Fish / Any meats
-   - Stored in `meatPreference`
-
-4. **"Do you drink beer?"** (required, single-select pills)
-   - Yes / No
-   - Stored in `drinksBeer`
-
-5. **"Are you planning to stay overnight at the Builders Factory?"** (required, single-select pills)
-   - Yes / No
-   - Below this: a muted italic note: "No beds provided -- but couches and quiet zones available. You may bring equipment for better rest."
-   - Stored in `stayingOvernight`
-
-### Validation Update
-Step 3 `canProceed` changes from `dietary && languages.length > 0` to:
-`dietary && drinksBeer && stayingOvernight`
-
-### Save Profile Update
-Add `allergies_detail`, `meat_preference`, `drinks_beer`, `staying_overnight` to the profile update payload. Remove `languages` from the update.
-
-## Conditional Visibility Approach
-Simple conditional rendering using the `dietary` state value:
-- `dietary === "Allergies"` shows the allergies text input
-- `dietary === "No"` shows the meat preference pills
-- Both hidden otherwise
-
-When `dietary` changes, the conditionally-shown fields reset (clear `allergiesDetail` when switching away from Allergies, clear `meatPreference` when switching away from No).
-
-## Files Modified
-- **Database migration** -- add 4 new columns
-- **src/pages/Onboarding.tsx** -- replace step 3 content, new state vars, updated validation and save logic
+### Files Modified
+- `src/pages/Onboarding.tsx` -- graceful handling for unauthenticated save
+- `src/pages/Index.tsx` -- fetch real profile, real completion %, real points
+- `src/pages/People.tsx` -- replace mock data with profiles query
+- `src/pages/Profile.tsx` -- fetch and display current user's real profile data
 
