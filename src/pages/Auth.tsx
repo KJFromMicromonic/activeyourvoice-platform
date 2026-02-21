@@ -24,6 +24,20 @@ const Auth = () => {
   const [view, setView] = useState<ViewState>("splash");
   const [mode, setMode] = useState<AuthMode>("signin");
 
+  // Redirect authenticated users away from auth page
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        navigate("/", { replace: true });
+      }
+    });
+    // Also check on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate("/", { replace: true });
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
   // Persist remember-me preference and email
   useEffect(() => {
     if (rememberMe && email) {
