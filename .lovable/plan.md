@@ -1,54 +1,110 @@
 
+# Redesign: Home Dashboard -- Match the Onboarding Energy
 
-# Fix: "Enter the Hub" Redirects to Login Page
+## Overview
+Transform the Home dashboard from its current flat, functional appearance into a cinematic, premium experience that matches the onboarding screens. This involves adding the MeshBackground, Waveform, Playfair Display serif font, glassmorphism upgrades, and removing the Icebreaker Challenge section.
 
-## Root Cause
+## Changes
 
-There are two scenarios causing this issue:
+### 1. `src/pages/Index.tsx` -- Full visual overhaul
 
-1. **Unauthenticated users** ("Don't log in" path): The `saveProfile` function detects no user and returns early without saving. Then `finish()` navigates to `/`, but `AuthGuard` sees no session and redirects to `/auth`. This is a dead end -- unauthenticated users can never reach the dashboard.
+**Background and Structure:**
+- Wrap the entire page in a relative container with the `MeshBackground` component (same as onboarding) behind all content
+- Add a subtle `Waveform` component at the top behind the welcome text (low opacity, fixed/absolute positioned)
+- Change outer container to position relative with overflow hidden
 
-2. **Authenticated users**: The save works, but `AuthGuard` re-fetches `onboarding_completed` fresh on every mount. There may be a timing issue where the profile query runs before the database write fully propagates, causing a brief `onboarded = false` state that redirects to `/onboarding`.
+**Welcome Header:**
+- Keep "Welcome back," in Inter (sans-serif)
+- Render the user's name (`displayName`) in Playfair Display with gradient text, using the same `titleStyle` object from onboarding
+- Replace the tagline "In 2026, the interface is no longer a screen..." with a dynamic countdown line: "6 days until we build the future" (calculated from TARGET_DATE)
 
-## Fix
+**Countdown Timer Card:**
+- Add a gradient glow border using inline style: `border-color: hsl(263 84% 58% / 0.25)` and `box-shadow` with purple/blue glow
+- Make countdown numbers larger (`text-3xl font-bold text-white` instead of gradient-text)
+- Individual number boxes get enhanced glassmorphism: `background: rgba(255,255,255,0.06)`, subtle border
+- Add a dark purple gradient background inside the card
 
-### 1. Onboarding.tsx -- Redirect unauthenticated users to /auth after onboarding
+**Your Status Card:**
+- Enhanced glassmorphism with purple-tinted border (`border-color: rgba(139, 92, 246, 0.15)`)
+- Completion percentage: larger, bolder, gradient-text (already has this)
+- Team status dot: change from `bg-destructive` (red) to `bg-amber-500` with a CSS pulse animation for "solo" users
+- Points: add a text-shadow glow effect in purple
 
-- In the `finish` function, check if there's an active session first.
-- If no session exists, redirect to `/auth` instead of `/` (since they can't access the dashboard without logging in). Show a toast like "Sign in to access the Hub."
-- For authenticated users, keep `navigate("/")`.
+**Quick Action Buttons:**
+- Add `hover:border-primary/30` for purple border on hover
+- Add `active:scale-95 transition-transform` for tap animation
+- Wrap icons in a small gradient background circle/pill
 
-### 2. App.tsx -- Wrap /onboarding in AuthGuard (preferred alternative)
+**Remove Icebreaker Challenge:**
+- Delete the entire Icebreaker Challenge section (lines 192-211)
 
-A cleaner approach: move the `/onboarding` route **inside** `AuthGuard` so only authenticated users can access it. The "Don't log in" button on the Auth page would need to be removed or repurposed (since onboarding without auth leads to a dead end anyway -- data can't be saved, and the dashboard can't be accessed).
+**Announcements Section:**
+- Section label: add `tracking-[0.2em]` for wider letter-spacing
+- Timestamp color: change from `text-muted-foreground/60` to a muted purple (`text-primary/40`)
+- Pin icon already uses `text-primary` (purple) -- keep as is
 
-**Recommended approach**: Keep `/onboarding` outside AuthGuard but handle both paths:
+**Achievements Section:**
+- Add a badge count header: "Your Achievements -- 1/6 earned" (dynamically counted)
+- Earned badges: add `glow-ring` class for purple glow around them
+- Unearned badges: add `backdrop-blur-sm` and a frosted overlay instead of just opacity-30
 
-- **Authenticated user**: `saveProfile` saves data normally, `finish()` navigates to `/`, `AuthGuard` sees `onboarding_completed = true` and lets them through.
-- **Unauthenticated user**: `saveProfile` skips the DB write, `finish()` navigates to `/auth` with a toast prompting them to sign in.
+**Spacing:**
+- Change outer container from `space-y-6` to `space-y-8` for more breathing room between sections
+- Add bottom padding for scroll clearance past the nav bar
 
-### 3. AuthGuard -- Prevent stale onboarding check
+### 2. `src/index.css` -- New utility classes
 
-- After `saveProfile` sets `onboarding_completed: true`, the AuthGuard on `/` re-fetches the profile. To avoid any race condition, add a small state optimization: when navigating from onboarding to `/`, pass a flag (e.g., URL search param `?onboarded=1`) that AuthGuard can use to skip the re-check and trust the user just completed onboarding.
+Add these CSS classes to support the dashboard redesign:
+- `.glow-border` -- purple-to-blue gradient border glow for special cards
+- `.pulse-amber` -- pulsing amber dot animation for team status
+- `.badge-locked` -- frosted glass overlay for unearned badges
+
+### 3. No changes to other files
+- `MeshBackground` and `Waveform` components already exist and are reused as-is
+- Layout.tsx stays unchanged
+- No database changes needed
 
 ## Technical Details
 
-### Onboarding.tsx changes
+### Import additions in Index.tsx
 ```text
-finish function:
-  1. Check supabase.auth.getUser()
-  2. If user exists -> navigate("/")
-  3. If no user -> toast("Please sign in to access the Hub") + navigate("/auth")
++ import MeshBackground from "@/components/MeshBackground";
++ import Waveform from "@/components/Waveform";
 ```
 
-### App.tsx changes (optional optimization)
+### Title style object (reused from onboarding)
 ```text
-AuthGuard:
-  - Check for ?onboarded=1 search param
-  - If present, skip the profiles query and set onboarded = true immediately
-  - Remove the param from the URL to keep it clean
+const titleStyle = {
+  fontFamily: "'Playfair Display', serif",
+  background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+};
+```
+
+### Dynamic subtitle
+```text
+const daysUntil = Math.max(0, Math.ceil((TARGET_DATE.getTime() - Date.now()) / 86400000));
+subtitle = `${daysUntil} days until we build the future`
+```
+
+### Icebreaker removal
+The entire block from lines 192-211 (the motion.div containing the Icebreaker Challenge) will be deleted. The `Sparkles` import can also be removed.
+
+### Badge count
+```text
+const earnedCount = badges.filter(b => b.earned).length;
+// Header: "Your Achievements -- {earnedCount}/{badges.length} earned"
+```
+
+### New CSS: pulse-amber animation
+```text
+@keyframes pulse-amber {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+}
 ```
 
 ### Files Modified
-- `src/pages/Onboarding.tsx` -- update `finish` to handle unauthenticated users
-- `src/App.tsx` -- (optional) optimize AuthGuard to trust onboarding completion flag
+- `src/pages/Index.tsx` -- full visual overhaul + remove icebreaker
+- `src/index.css` -- add new utility classes for glow border, pulse amber, badge locked
