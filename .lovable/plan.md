@@ -1,114 +1,73 @@
 
 
-# Redesign Onboarding Steps to Match Splash Energy
+# Redesign Onboarding Step 3 -- "We want to take care of you"
 
 ## Overview
-Transform the flat, empty-feeling onboarding steps (1-5) into an immersive cinematic experience that matches the splash screen. The animated mesh background and waveform persist continuously while only form content transitions between steps.
+Replace the current dietary dropdown + language pills on Step 3 with 5 new questions, some with conditional visibility. Languages are removed from this step entirely.
 
-## Architecture
+## Database Changes
 
-The MeshBackground and Waveform components currently live inline in `Auth.tsx`. I will extract them into shared components, then restructure `Onboarding.tsx` so the background layer sits **outside** AnimatePresence -- making it persistent while only the form slides/fades.
+Add 3 new columns to the `profiles` table via migration:
 
-```text
-+----------------------------------+
-|  MeshBackground (canvas, fixed)  |
-|  +----------------------------+  |
-|  |  Back button (top-left)    |  |
-|  |  Progress bar + "1/5"      |  |
-|  |  Waveform (subtle, static) |  |
-|  |  +----------------------+  |  |
-|  |  | AnimatePresence      |  |  |
-|  |  |   Title (Playfair)   |  |  |
-|  |  |   Subtitle           |  |  |
-|  |  |   Gradient divider   |  |  |
-|  |  |   Form fields        |  |  |
-|  |  +----------------------+  |  |
-|  |  Next CTA (bottom, full-w) |  |
-|  +----------------------------+  |
-+----------------------------------+
-```
+- `allergies_detail` (text, nullable) -- free text for allergy details
+- `meat_preference` (text, nullable) -- chicken/beef/fish/any meats
+- `drinks_beer` (text, nullable) -- yes/no
+- `staying_overnight` (text, nullable) -- yes/no
 
----
+The existing `dietary` column will store the answer to Q1 (Vegetarian/Vegan/Allergies/No).
 
-## Files to Create
+## Frontend Changes (src/pages/Onboarding.tsx)
 
-### `src/components/MeshBackground.tsx`
-Extract the animated canvas mesh gradient from Auth.tsx (the 4-blob radial gradient animation on deep charcoal). Reusable component, renders a fixed full-screen canvas.
+### New State Variables
+- `allergiesDetail` (string) -- text field for allergy list
+- `meatPreference` (string) -- single select
+- `drinksBeer` (string) -- single select
+- `stayingOvernight` (string) -- single select
 
-### `src/components/Waveform.tsx`
-Extract the animated SVG waveform from Auth.tsx. Accept an optional `subtle` prop that reduces opacity and max-width for use in onboarding steps (vs. full-size on splash).
+Remove: `languages` state, `LANGUAGES` constant, and language-related code from step 3.
 
----
+### Step 3 UI (replaces current content)
 
-## Files to Modify
+All questions use the same pill-button pattern for single-select options:
 
-### `src/pages/Auth.tsx`
-- Replace inline MeshBackground and Waveform definitions with imports from the new shared components.
-- No visual changes.
+1. **"Do you have any dietary restrictions?"** (required, single-select pills)
+   - Vegetarian / Vegan / Allergies / No
+   - Stored in `dietary`
 
-### `src/pages/Onboarding.tsx` -- Main Redesign
+2. **"If yes to allergies, please list below."** (text input)
+   - Only visible when `dietary === "Allergies"`
+   - Stored in `allergiesDetail`
 
-**Layout restructure:**
-- Add `MeshBackground` as a fixed layer behind everything (persistent, never re-renders between steps).
-- Add subtle `Waveform` at top of screen, outside AnimatePresence, so it stays continuous.
-- Progress bar sits below waveform with gradient indicator.
+3. **"If not, any preferences?"** (single-select pills)
+   - Only visible when `dietary === "No"`
+   - Chicken / Beef / Fish / Any meats
+   - Stored in `meatPreference`
 
-**"Back" button:**
-- Move from bottom-left button to a text link in the **top-left corner** (above progress bar area), using ChevronLeft icon + "Back" text. Styled as ghost/text.
+4. **"Do you drink beer?"** (required, single-select pills)
+   - Yes / No
+   - Stored in `drinksBeer`
 
-**Step titles:**
-- Apply Playfair Display serif font with purple-to-blue gradient fill (same inline style as splash "Activate Your Voice").
-- Increase size to `text-3xl` or `text-4xl`.
-- Left-aligned, positioned at ~15% from top (using `pt-[15vh]` or similar).
+5. **"Are you planning to stay overnight at the Builders Factory?"** (required, single-select pills)
+   - Yes / No
+   - Below this: a muted italic note: "No beds provided -- but couches and quiet zones available. You may bring equipment for better rest."
+   - Stored in `stayingOvernight`
 
-**Gradient divider line:**
-- Add a thin `<div>` with `gradient-primary h-px w-16 rounded-full` between the title/subtitle and the form content area.
+### Validation Update
+Step 3 `canProceed` changes from `dietary && languages.length > 0` to:
+`dietary && drinksBeer && stayingOvernight`
 
-**Avatar circle (Step 1):**
-- Increase from `w-24 h-24` to `w-[120px] h-[120px]`.
-- Add `animate-[subtle-pulse_4s_ease-in-out_infinite]` to the glow ring for a breathing effect.
+### Save Profile Update
+Add `allergies_detail`, `meat_preference`, `drinks_beer`, `staying_overnight` to the profile update payload. Remove `languages` from the update.
 
-**Input fields (all steps):**
-- Replace `bg-muted/50 border-border` with glassmorphism: `bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] rounded-xl`.
-- Add focus styles: `focus:border-purple-500/50 focus:shadow-[0_0_15px_hsl(263_84%_58%_/_0.15)]`.
+## Conditional Visibility Approach
+Simple conditional rendering using the `dietary` state value:
+- `dietary === "Allergies"` shows the allergies text input
+- `dietary === "No"` shows the meat preference pills
+- Both hidden otherwise
 
-**Select trigger (Step 3):**
-- Same glassmorphism treatment as inputs.
+When `dietary` changes, the conditionally-shown fields reset (clear `allergiesDetail` when switching away from Allergies, clear `meatPreference` when switching away from No).
 
-**Textarea (Step 5):**
-- Same glassmorphism treatment.
-
-**"Next" button:**
-- Make full-width (`w-full`) instead of `flex-1` sharing space with Back.
-- Keep gradient variant. Anchored to bottom of screen.
-- Step 5 keeps "Skip for now" as a text link above the main CTA.
-
-**Content positioning:**
-- Remove `items-center justify-center` from the main content area. Instead use `pt-[15vh]` to push content to upper portion, removing dead space above.
-
-### `src/components/ui/progress.tsx`
-- Change indicator class from `bg-primary` to `gradient-primary` so the progress bar uses the purple-to-blue gradient.
-
-### `src/index.css`
-- Add a `.glass-input` utility class for the frosted glass input styling with focus glow (reusable across all form fields).
-
----
-
-## Transition Strategy
-
-The waveform and mesh background are rendered **outside** the `AnimatePresence` block, so they never unmount or re-animate. Only the inner form content (title, fields, buttons) slides and fades via the existing `slideVariants`. This creates the feeling of moving through one continuous immersive experience.
-
----
-
-## Summary of Visual Changes
-- Animated mesh gradient background on all steps (matches splash)
-- Subtle waveform at top (persistent across steps)
-- Playfair Display serif titles with gradient text
-- Content pushed to upper 15% (no dead space)
-- Glassmorphism inputs with purple focus glow
-- Larger avatar circle (120px) with pulsing glow
-- Gradient divider line between title and form
-- Full-width Next CTA at bottom
-- Back as top-left text link
-- Gradient progress bar
+## Files Modified
+- **Database migration** -- add 4 new columns
+- **src/pages/Onboarding.tsx** -- replace step 3 content, new state vars, updated validation and save logic
 
