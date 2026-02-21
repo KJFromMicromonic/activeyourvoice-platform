@@ -1,21 +1,92 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Users, Scale, BookOpen, MapPin, Handshake, Trophy, ExternalLink, Clock, Coffee, Moon, Sun, PartyPopper, Utensils } from "lucide-react";
+import { Calendar, Users, Scale, BookOpen, MapPin, Handshake, Trophy, ExternalLink, Clock, Coffee, Moon, Sun, PartyPopper, Utensils, ChevronDown, Megaphone, Wrench, Laptop, AlertTriangle, Wine } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
-const schedule = [
-  { time: "3:00 PM", event: "Registration & Welcome", icon: Users, day: "Sat" },
-  { time: "4:00 PM", event: "Opening Ceremony", icon: PartyPopper, day: "Sat" },
-  { time: "5:00 PM", event: "Hacking Begins! 🚀", icon: Clock, day: "Sat", highlight: true },
-  { time: "8:00 PM", event: "Dinner", icon: Utensils, day: "Sat" },
-  { time: "12:00 AM", event: "Midnight Snack", icon: Moon, day: "Sun" },
-  { time: "8:00 AM", event: "Breakfast", icon: Coffee, day: "Sun" },
-  { time: "12:00 PM", event: "Lunch", icon: Utensils, day: "Sun" },
-  { time: "4:45 PM", event: "Submissions Close ⏰", icon: Clock, day: "Sun", highlight: true },
-  { time: "5:00 PM", event: "Track Judging", icon: Scale, day: "Sun" },
-  { time: "6:30 PM", event: "Finals — Top 6 Demo", icon: Trophy, day: "Sun", highlight: true },
-  { time: "7:30 PM", event: "Winner Announcement 🎉", icon: PartyPopper, day: "Sun", highlight: true },
-  { time: "8:00 PM", event: "Closing Party", icon: PartyPopper, day: "Sun" },
+interface TimelineEvent {
+  time: string;
+  event: string;
+  icon: React.ElementType;
+  highlight?: boolean;
+  subItems?: string[];
+}
+
+interface TimelineDay {
+  date: string;
+  label: string;
+  emoji: string;
+  isMilestone?: boolean;
+  events: TimelineEvent[];
+}
+
+const timelineDays: TimelineDay[] = [
+  {
+    date: "Monday, Feb 23",
+    label: "Track Announcement",
+    emoji: "📅",
+    isMilestone: true,
+    events: [{ time: "", event: "Announcement of 3 tracks + team formation facilitation", icon: Megaphone }],
+  },
+  {
+    date: "Wednesday, Feb 25",
+    label: "Partners Demo",
+    emoji: "📅",
+    isMilestone: true,
+    events: [{ time: "", event: "Partners demo + DoraHack team submission", icon: Handshake }],
+  },
+  {
+    date: "Thursday, Feb 26",
+    label: "Deadline Day",
+    emoji: "📅",
+    isMilestone: true,
+    events: [
+      { time: "", event: "Deadline: Team submission & perks redeem", icon: AlertTriangle, highlight: true },
+      { time: "", event: "Codex Access — organisation ID distributed", icon: Laptop },
+    ],
+  },
+  {
+    date: "Saturday, Feb 28",
+    label: "Hackathon Day 1",
+    emoji: "📅",
+    events: [
+      { time: "2:00 PM – 3:00 PM", event: "Check-in & welcome coffee ☕", icon: Coffee },
+      {
+        time: "3:00 PM – 3:30 PM", event: "Opening ceremony 🎤", icon: PartyPopper, highlight: true,
+        subItems: [
+          "Welcome speech: AIC + Builders Factory",
+          "Introduction to hackathon rules & tracks",
+          "Introduction to mentors, jury & judging criteria",
+          "Agenda overview",
+          "Perks from sponsors",
+        ],
+      },
+      { time: "3:30 PM – 4:15 PM", event: "Partners workshop 🤝", icon: Wrench },
+      { time: "4:15 PM – 8:00 PM", event: "Working session #1 💻", icon: Laptop },
+      { time: "8:00 PM – 9:00 PM", event: "Dinner 🍽️", icon: Utensils },
+      { time: "8:30 PM – 11:00 PM", event: "Working session #2 💻", icon: Laptop },
+      { time: "11:00 PM", event: "Overnight build begins 🌙", icon: Moon },
+    ],
+  },
+  {
+    date: "Sunday, March 1",
+    label: "Hackathon Day 2",
+    emoji: "📅",
+    events: [
+      { time: "9:00 AM", event: "Coffee ☕", icon: Coffee },
+      { time: "9:00 AM – 12:30 PM", event: "Working session #3 💻", icon: Laptop },
+      { time: "12:30 PM – 1:30 PM", event: "Lunch 🍽️", icon: Utensils },
+      { time: "12:30 PM – 5:00 PM", event: "Final working session 💻", icon: Laptop },
+      { time: "4:30 PM", event: "Jury arrival time 🧑‍⚖️", icon: Scale },
+      { time: "5:00 PM", event: "Project submission deadline 🚨", icon: Clock, highlight: true },
+      { time: "5:00 PM – 6:00 PM", event: "Demo & jury fire 🔥 (3 min pitch + Q&A)", icon: Trophy, highlight: true },
+      { time: "6:00 PM – 6:30 PM", event: "Top 6 teams demo 🏆", icon: Trophy, highlight: true },
+      { time: "6:30 PM – 7:00 PM", event: "Jury deliberation & networking 🤝", icon: Handshake },
+      { time: "7:00 PM", event: "Result announcement & prizes 🎉", icon: PartyPopper, highlight: true },
+      { time: "7:00 PM – 8:00 PM", event: "Cocktail celebration 🥂", icon: Wine },
+    ],
+  },
 ];
 
 const judges = [
@@ -42,6 +113,72 @@ const partners = [
   { name: "42 Entrepreneurs", role: "Co-Host", perks: "Venue & community partner" },
 ];
 
+const ScheduleTab = () => {
+  const [openDays, setOpenDays] = useState<string[]>(["Saturday, Feb 28", "Sunday, March 1"]);
+
+  const toggleDay = (date: string) => {
+    setOpenDays((prev) => prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]);
+  };
+
+  return (
+    <div className="space-y-3">
+      {timelineDays.map((day) => (
+        <div key={day.date}>
+          {day.isMilestone ? (
+            <div className="glass-card p-3 space-y-2">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{day.emoji} {day.date}</h4>
+              {day.events.map((ev, j) => (
+                <div key={j} className={`flex items-center gap-2 text-sm ${ev.highlight ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                  <ev.icon className="w-4 h-4 shrink-0" />
+                  <span>{ev.event}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Collapsible open={openDays.includes(day.date)} onOpenChange={() => toggleDay(day.date)}>
+              <CollapsibleTrigger className="w-full glass-card-hover p-3 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold">{day.emoji} {day.date}</h4>
+                  <p className="text-xs text-muted-foreground">{day.label}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openDays.includes(day.date) ? "rotate-180" : ""}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-1 space-y-1 pl-2 border-l-2 border-primary/20 ml-4">
+                {day.events.map((ev, j) => (
+                  <motion.div
+                    key={j}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: j * 0.03 }}
+                    className={`flex items-start gap-3 p-2.5 rounded-lg ${ev.highlight ? "glass-card border-primary/20" : ""}`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${ev.highlight ? "gradient-primary" : "bg-muted"}`}>
+                      <ev.icon className="w-3.5 h-3.5 text-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {ev.time && <p className="text-[10px] text-muted-foreground font-medium">{ev.time}</p>}
+                      <p className={`text-sm ${ev.highlight ? "font-semibold" : "text-muted-foreground"}`}>{ev.event}</p>
+                      {ev.subItems && (
+                        <ul className="mt-1.5 space-y-0.5">
+                          {ev.subItems.map((sub, k) => (
+                            <li key={k} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                              <span className="gradient-text mt-0.5">•</span> {sub}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const Event = () => {
   return (
     <div className="px-5 pt-12 pb-6 max-w-lg mx-auto space-y-5">
@@ -60,26 +197,8 @@ const Event = () => {
         </TabsList>
 
         {/* Schedule */}
-        <TabsContent value="schedule" className="mt-4 space-y-2">
-          {schedule.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.04 }}
-              className={`flex items-center gap-3 p-3 rounded-xl transition-all ${item.highlight ? "glass-card border-primary/20" : "hover:bg-muted/30"}`}
-              style={item.highlight ? { borderColor: "hsl(263 84% 58% / 0.2)" } : {}}
-            >
-              <div className="text-right min-w-[60px]">
-                <p className="text-xs font-semibold">{item.time}</p>
-                <p className="text-[10px] text-muted-foreground">{item.day}</p>
-              </div>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.highlight ? "gradient-primary" : "bg-muted"}`}>
-                <item.icon className="w-4 h-4 text-foreground" />
-              </div>
-              <span className={`text-sm ${item.highlight ? "font-semibold" : "text-muted-foreground"}`}>{item.event}</span>
-            </motion.div>
-          ))}
+        <TabsContent value="schedule" className="mt-4">
+          <ScheduleTab />
         </TabsContent>
 
         {/* Jury */}
@@ -139,7 +258,7 @@ const Event = () => {
             {[
               "Teams of 3-6 people",
               "Team registration deadline: Thursday Feb 26",
-              "Submission deadline: Sunday March 1, 4:45 PM",
+              "Submission deadline: Sunday March 1, 5:00 PM",
               "Must use at least one partner API (Speechmatics, OpenAI, Backboard)",
               "All code must be written during the hackathon",
               "7 teams max per track — first come first served",
@@ -158,8 +277,9 @@ const Event = () => {
           <div className="glass-card p-5 space-y-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">École 42, Paris</h3>
+              <h3 className="font-semibold">The Builders Factory</h3>
             </div>
+            <p className="text-sm text-muted-foreground">18 rue la Condamine, 75017 Paris</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
               This is more than a hackathon — you'll be living together for 24 hours. Private offices for each team, rest areas with couches, and all meals provided.
             </p>

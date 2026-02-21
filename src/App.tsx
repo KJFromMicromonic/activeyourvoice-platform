@@ -10,6 +10,7 @@ import Teams from "./pages/Teams";
 import Event from "./pages/Event";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/people" element={<People />} />

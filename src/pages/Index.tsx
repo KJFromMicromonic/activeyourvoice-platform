@@ -5,6 +5,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+// Redirect to onboarding if not completed
+const useOnboardingRedirect = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem("onboarding_completed")) {
+      navigate("/onboarding", { replace: true });
+    }
+  }, [navigate]);
+};
+
 const TARGET_DATE = new Date("2026-02-28T15:00:00+01:00");
 
 const useCountdown = () => {
@@ -58,6 +68,7 @@ const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
 );
 
 const Index = () => {
+  useOnboardingRedirect();
   const countdown = useCountdown();
   const navigate = useNavigate();
   const profileCompletion = 35;
