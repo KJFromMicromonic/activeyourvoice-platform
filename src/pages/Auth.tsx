@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,96 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import MeshBackground from "@/components/MeshBackground";
+import Waveform from "@/components/Waveform";
 
 type AuthMode = "signin" | "signup";
 type ViewState = "splash" | "form" | "magic-link-sent" | "signup-confirm";
-
-/* ── Animated mesh gradient background ── */
-const MeshBackground = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    let animId: number;
-    let t = 0;
-
-    const resize = () => {
-      canvas.width = window.innerWidth * devicePixelRatio;
-      canvas.height = window.innerHeight * devicePixelRatio;
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const blobs = [
-      { x: 0.3, y: 0.25, r: 0.35, color: [120, 60, 220], speed: 0.0004 },
-      { x: 0.7, y: 0.3, r: 0.3, color: [60, 100, 240], speed: 0.0006 },
-      { x: 0.5, y: 0.7, r: 0.25, color: [100, 40, 200], speed: 0.0005 },
-      { x: 0.2, y: 0.6, r: 0.2, color: [50, 80, 220], speed: 0.0003 },
-    ];
-
-    const draw = () => {
-      t++;
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.fillStyle = "hsl(240, 25%, 3%)";
-      ctx.fillRect(0, 0, w, h);
-
-      for (const b of blobs) {
-        const cx = (b.x + Math.sin(t * b.speed) * 0.08) * w;
-        const cy = (b.y + Math.cos(t * b.speed * 1.3) * 0.06) * h;
-        const r = b.r * Math.min(w, h);
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-        grad.addColorStop(0, `rgba(${b.color.join(",")}, 0.18)`);
-        grad.addColorStop(1, `rgba(${b.color.join(",")}, 0)`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-      }
-      animId = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
-};
-
-/* ── Waveform SVG ── */
-const Waveform = () => (
-  <svg viewBox="0 0 200 30" className="w-full max-w-xs opacity-20" preserveAspectRatio="none">
-    {Array.from({ length: 40 }).map((_, i) => {
-      const h = 4 + Math.sin(i * 0.5) * 8 + Math.random() * 6;
-      return (
-        <motion.rect
-          key={i}
-          x={i * 5}
-          y={15 - h / 2}
-          width={2.5}
-          height={h}
-          rx={1.25}
-          fill="url(#waveGrad)"
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: [0.3, 1, 0.5, 0.8, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity, delay: i * 0.04, ease: "easeInOut" }}
-          style={{ transformOrigin: "center" }}
-        />
-      );
-    })}
-    <defs>
-      <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="hsl(263, 84%, 58%)" />
-        <stop offset="100%" stopColor="hsl(217, 91%, 60%)" />
-      </linearGradient>
-    </defs>
-  </svg>
-);
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -156,7 +71,6 @@ const Auth = () => {
       <div className="fixed inset-0 overflow-hidden bg-background">
         <MeshBackground />
         <div className="relative z-10 flex flex-col min-h-screen px-6 py-10">
-          {/* Top logos */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
@@ -168,9 +82,7 @@ const Auth = () => {
             <span>The AI Collective</span>
           </motion.div>
 
-          {/* Hero section */}
           <div className="flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full">
-            {/* Waveform */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -180,7 +92,6 @@ const Auth = () => {
               <Waveform />
             </motion.div>
 
-            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -199,7 +110,6 @@ const Auth = () => {
               Your Voice
             </motion.h1>
 
-            {/* Event details — left aligned */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -216,7 +126,6 @@ const Auth = () => {
               </p>
             </motion.div>
 
-            {/* Punchy line */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -226,7 +135,6 @@ const Auth = () => {
               100 builders. 24 hours. 1 house. €100,000 prizes.
             </motion.p>
 
-            {/* Quote */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
@@ -236,7 +144,6 @@ const Auth = () => {
               "Architect the future of conversational intelligence and neural dialogue."
             </motion.p>
 
-            {/* CTA */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
