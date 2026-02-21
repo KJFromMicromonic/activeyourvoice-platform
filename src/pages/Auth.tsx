@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,7 @@ const Waveform = () => (
 );
 
 const Auth = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState(() => localStorage.getItem("remembered_email") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -340,13 +342,15 @@ const Auth = () => {
           </TabsContent>
         </Tabs>
 
-        <p className="text-sm text-muted-foreground">
-          {mode === "signin" ? (
-            <>Don't have an account?{" "}<button className="text-primary hover:underline" onClick={() => setMode("signup")}>Sign up</button></>
-          ) : (
-            <>Already have an account?{" "}<button className="text-primary hover:underline" onClick={() => setMode("signin")}>Sign in</button></>
-          )}
-        </p>
+        <div className="flex items-center gap-3 my-2">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground" onClick={() => navigate("/onboarding")}>
+          Don't log in →
+        </Button>
       </motion.div>
     </div>
   );
