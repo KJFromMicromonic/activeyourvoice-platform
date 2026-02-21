@@ -220,7 +220,7 @@ const Auth = () => {
               transition={{ duration: 0.8, delay: 1.2 }}
               className="mt-6 text-sm italic text-muted-foreground max-w-md"
             >
-              "In 2026, the interface is no longer a screen — it is a conversation."
+              "Architect the future of conversational intelligence and neural dialogue."
             </motion.p>
 
             {/* CTA */}
