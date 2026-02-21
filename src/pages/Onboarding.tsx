@@ -92,7 +92,11 @@ const Onboarding = () => {
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { toast.error("Not authenticated"); setSaving(false); return; }
+      if (!user) {
+        // Unauthenticated user (via "Don't log in") — skip DB save gracefully
+        setSaving(false);
+        return;
+      }
 
       let avatar_url: string | null = null;
       if (avatarFile) {
