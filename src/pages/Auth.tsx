@@ -106,7 +106,7 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(() => localStorage.getItem("remember_me") !== "false");
   const [loading, setLoading] = useState(false);
-  const [view, setView] = useState<ViewState>("form");
+  const [view, setView] = useState<ViewState>("splash");
   const [mode, setMode] = useState<AuthMode>("signin");
 
   // Persist remember-me preference and email

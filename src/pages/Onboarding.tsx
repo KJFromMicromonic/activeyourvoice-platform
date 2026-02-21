@@ -53,10 +53,10 @@ const Onboarding = () => {
 
   const canProceed = () => {
     switch (step) {
-      case 0: return firstName.trim() && lastName.trim();
-      case 1: return skills.length > 0;
-      case 2: return dietary && languages.length > 0;
-      case 3: return lookingFor.length > 0 && teamStatus;
+      case 1: return firstName.trim() && lastName.trim();
+      case 2: return skills.length > 0;
+      case 3: return dietary && languages.length > 0;
+      case 4: return lookingFor.length > 0 && teamStatus;
       default: return true;
     }
   };
@@ -132,7 +132,7 @@ const Onboarding = () => {
   };
 
   const handleNext = async () => {
-    if (step === 4) {
+    if (step === 5) {
       await saveProfile();
       goNext();
       setTimeout(() => setShowPoints(true), 500);
@@ -163,10 +163,10 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {step <= 4 && (
+      {step >= 1 && step <= 5 && (
         <div className="px-5 pt-4">
-          <Progress value={((step + 1) / 5) * 100} className="h-2 bg-muted" />
-          <p className="text-xs text-muted-foreground mt-1 text-right">{step + 1}/5</p>
+          <Progress value={(step / 5) * 100} className="h-2 bg-muted" />
+          <p className="text-xs text-muted-foreground mt-1 text-right">{step}/5</p>
         </div>
       )}
 
@@ -182,8 +182,32 @@ const Onboarding = () => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="w-full max-w-md"
           >
-            {/* Step 0 — Name + Photo */}
+            {/* Screen 0 — Welcome Splash */}
             {step === 0 && (
+              <div className="text-center space-y-6">
+                <div className="relative inline-block">
+                  <div className="absolute inset-0 rounded-full gradient-primary blur-3xl opacity-30 scale-150 animate-pulse" />
+                  <h1 className="relative text-4xl font-extrabold gradient-text leading-tight">
+                    Activate Your Voice
+                  </h1>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Speechmatics × The AI Collective</p>
+                  <p className="text-sm font-medium">24h Residency Hackathon</p>
+                  <p className="text-sm text-muted-foreground">The Builders Factory, Paris</p>
+                  <p className="text-sm text-muted-foreground">Feb 28 – March 1, 2026</p>
+                </div>
+                <p className="text-xs text-muted-foreground italic">
+                  "In 2026, the interface is no longer a screen — it is a conversation."
+                </p>
+                <Button variant="gradient" size="lg" className="mt-4 w-full text-base" onClick={goNext}>
+                  Let's go 🚀
+                </Button>
+              </div>
+            )}
+
+            {/* Step 1 — Name + Photo */}
+            {step === 1 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold">First, who are you? ⚡</h2>
@@ -218,8 +242,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 1 — Skills + LinkedIn */}
-            {step === 1 && (
+            {/* Step 2 — Skills + LinkedIn */}
+            {step === 2 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold">What's your superpower? 💡</h2>
@@ -236,8 +260,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 2 — Dietary + Languages */}
-            {step === 2 && (
+            {/* Step 3 — Dietary + Languages */}
+            {step === 3 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold">We want to take care of you 🤗</h2>
@@ -261,8 +285,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 3 — Looking for + Team status */}
-            {step === 3 && (
+            {/* Step 4 — Looking for + Team status */}
+            {step === 4 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold">What are you here for? 🎯</h2>
@@ -289,8 +313,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 4 — Bio + Details (skippable) */}
-            {step === 4 && (
+            {/* Step 5 — Bio + Details (skippable) */}
+            {step === 5 && (
               <div className="space-y-5">
                 <div>
                   <h2 className="text-2xl font-bold">Tell the crew about you ✍️</h2>
@@ -319,7 +343,7 @@ const Onboarding = () => {
             )}
 
             {/* Done Screen */}
-            {step === 5 && (
+            {step === 6 && (
               <div className="text-center space-y-6">
                 <div className="relative">
                   <div className="confetti-container">
@@ -357,15 +381,13 @@ const Onboarding = () => {
       </div>
 
       {/* Navigation buttons for steps 1-5 */}
-      {step <= 4 && (
+      {step >= 1 && step <= 5 && (
         <div className="px-5 pb-8 flex gap-3">
-          {step > 0 && (
-            <Button variant="outline" onClick={goBack} className="flex-shrink-0">
-              <ChevronLeft className="w-4 h-4 mr-1" /> Back
-            </Button>
-          )}
+          <Button variant="outline" onClick={goBack} className="flex-shrink-0">
+            <ChevronLeft className="w-4 h-4 mr-1" /> Back
+          </Button>
           <div className="flex-1 flex gap-2">
-            {step === 4 && (
+            {step === 5 && (
               <Button variant="ghost" className="flex-1 text-muted-foreground text-sm" onClick={handleSkip} disabled={saving}>
                 Skip for now
               </Button>
@@ -376,7 +398,7 @@ const Onboarding = () => {
               disabled={!canProceed() || saving}
               onClick={handleNext}
             >
-              {saving ? "Saving..." : step === 4 ? "Finish" : "Next"} <ChevronRight className="w-4 h-4 ml-1" />
+              {saving ? "Saving..." : step === 5 ? "Finish" : "Next"} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>
