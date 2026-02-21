@@ -233,9 +233,9 @@ const Auth = () => {
               <Button
                 variant="gradient"
                 size="lg"
-                className="w-full max-w-md h-14 text-lg font-bold rounded-2xl animate-[pulse_3s_ease-in-out_infinite]"
+                className="w-full max-w-md h-14 text-lg font-bold rounded-2xl"
                 style={{
-                  boxShadow: "0 0 30px hsl(263 84% 58% / 0.4), 0 0 60px hsl(217 91% 60% / 0.2)",
+                  boxShadow: "0 0 20px hsl(263 84% 58% / 0.2), 0 0 40px hsl(217 91% 60% / 0.1)",
                 }}
                 onClick={() => setView("form")}
               >
