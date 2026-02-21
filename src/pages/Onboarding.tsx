@@ -146,7 +146,15 @@ const Onboarding = () => {
     setSaving(false);
   };
 
-  const finish = () => navigate("/");
+  const finish = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Please sign in to access the Hub");
+      navigate("/auth");
+    } else {
+      navigate("/?onboarded=1");
+    }
+  };
 
   const handleNext = async () => {
     if (step === 5) {

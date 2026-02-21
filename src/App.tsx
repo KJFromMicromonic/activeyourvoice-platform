@@ -32,6 +32,18 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!session) { setOnboarded(undefined); return; }
+    // Trust the onboarded flag from onboarding flow to avoid race conditions
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("onboarded") === "1") {
+      setOnboarded(true);
+      // Clean up the URL param
+      params.delete("onboarded");
+      const newUrl = params.toString()
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      return;
+    }
     supabase
       .from("profiles")
       .select("onboarding_completed")
