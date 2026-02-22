@@ -10,6 +10,7 @@ import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import People from "./pages/People";
 import Teams from "./pages/Teams";
+import TeamDetail from "./pages/TeamDetail";
 import Event from "./pages/Event";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/people" element={<People />} />
             <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/:teamId" element={<TeamDetail />} />
             <Route path="/event" element={<Event />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
