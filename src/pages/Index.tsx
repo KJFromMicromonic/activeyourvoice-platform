@@ -13,7 +13,7 @@ const titleStyle: React.CSSProperties = {
   background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
-  backgroundClip: "text",
+  backgroundClip: "text"
 };
 
 const useCountdown = () => {
@@ -23,9 +23,9 @@ const useCountdown = () => {
       const diff = Math.max(0, TARGET_DATE.getTime() - Date.now());
       setTimeLeft({
         days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
+        hours: Math.floor(diff % 86400000 / 3600000),
+        minutes: Math.floor(diff % 3600000 / 60000),
+        seconds: Math.floor(diff % 60000 / 1000)
       });
     };
     tick();
@@ -36,8 +36,8 @@ const useCountdown = () => {
 };
 
 const PROFILE_FIELDS = [
-  "first_name", "last_name", "avatar_url", "bio", "company", "role", "linkedin", "dietary", "team_status",
-] as const;
+"first_name", "last_name", "avatar_url", "bio", "company", "role", "linkedin", "dietary", "team_status"] as
+const;
 const PROFILE_ARRAY_FIELDS = ["skills", "looking_for"] as const;
 
 const calcCompletion = (profile: any) => {
@@ -50,45 +50,45 @@ const calcCompletion = (profile: any) => {
   for (const f of PROFILE_ARRAY_FIELDS) {
     if (Array.isArray(profile[f]) && profile[f].length > 0) filled++;
   }
-  return Math.round((filled / total) * 100);
+  return Math.round(filled / total * 100);
 };
 
 const quickActions = [
-  { icon: Users, label: "Find a team", to: "/teams" },
-  { icon: Rocket, label: "Browse people", to: "/people" },
-  { icon: Calendar, label: "View schedule", to: "/event" },
-  { icon: Send, label: "Submit project", to: "/teams" },
-];
+{ icon: Users, label: "Find a team", to: "/teams" },
+{ icon: Rocket, label: "Browse people", to: "/people" },
+{ icon: Calendar, label: "View schedule", to: "/event" },
+{ icon: Send, label: "Submit project", to: "/teams" }];
+
 
 const announcements = [
-  { id: 1, title: "Welcome to Activate Your Voice! 🎙️", body: "We're thrilled to have 100 builders joining us for 24 hours of creation. Get your profile ready!", pinned: true, time: "2h ago" },
-  { id: 2, title: "Team registration opens Thursday", body: "Form your team of 3-6 and register before Feb 26. First come, first served — 7 teams max per track.", pinned: false, time: "5h ago" },
-  { id: 3, title: "OpenAI GPT-5.3-Codex access confirmed", body: "All participants get free GPT-5.3-Codex access during the event. Details in Event tab.", pinned: false, time: "1d ago" },
-];
+{ id: 1, title: "Welcome to Activate Your Voice! 🎙️", body: "We're thrilled to have 100 builders joining us for 24 hours of creation. Get your profile ready!", pinned: true, time: "2h ago" },
+{ id: 2, title: "Team registration opens Thursday", body: "Form your team of 3-6 and register before Feb 26. First come, first served — 7 teams max per track.", pinned: false, time: "5h ago" },
+{ id: 3, title: "OpenAI GPT-5.3-Codex access confirmed", body: "All participants get free GPT-5.3-Codex access during the event. Details in Event tab.", pinned: false, time: "1d ago" }];
+
 
 const badges = [
-  { icon: "🌅", name: "Early Bird", earned: true },
-  { icon: "✅", name: "Crew Ready", earned: false },
-  { icon: "🤝", name: "Team Player", earned: false },
-  { icon: "💡", name: "Idea Machine", earned: false },
-  { icon: "🧊", name: "Icebreaker", earned: false },
-  { icon: "🚀", name: "Shipped It", earned: false },
-];
+{ icon: "🌅", name: "Early Bird", earned: true },
+{ icon: "✅", name: "Crew Ready", earned: false },
+{ icon: "🤝", name: "Team Player", earned: false },
+{ icon: "💡", name: "Idea Machine", earned: false },
+{ icon: "🧊", name: "Icebreaker", earned: false },
+{ icon: "🚀", name: "Shipped It", earned: false }];
 
-const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
-  <div className="flex flex-col items-center">
+
+const CountdownUnit = ({ value, label }: {value: number;label: string;}) =>
+<div className="flex flex-col items-center">
     <div
-      className="px-3 py-2 min-w-[56px] text-center rounded-xl"
-      style={{
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.1)",
-      }}
-    >
+    className="px-3 py-2 min-w-[56px] text-center rounded-xl"
+    style={{
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.1)"
+    }}>
+
       <span className="text-3xl font-bold text-white">{String(value).padStart(2, "0")}</span>
     </div>
     <span className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider">{label}</span>
-  </div>
-);
+  </div>;
+
 
 const Index = () => {
   const countdown = useCountdown();
@@ -108,12 +108,12 @@ const Index = () => {
   const profileCompletion = calcCompletion(profile);
   const displayName = profile?.first_name?.trim() || "Builder";
   const points = profile?.points ?? 0;
-  const teamStatusText = profile?.team_status === "Yes"
-    ? "In a team"
-    : "Solo — no team yet";
+  const teamStatusText = profile?.team_status === "Yes" ?
+  "In a team" :
+  "Solo — no team yet";
   const isInTeam = profile?.team_status === "Yes";
   const daysUntil = Math.max(0, Math.ceil((TARGET_DATE.getTime() - Date.now()) / 86400000));
-  const earnedCount = badges.filter(b => b.earned).length;
+  const earnedCount = badges.filter((b) => b.earned).length;
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -124,17 +124,17 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative"
-        >
+          className="relative">
+
           <div className="absolute -top-2 left-0 right-0 opacity-10">
             <Waveform subtle />
           </div>
           <h1 className="text-2xl font-bold relative z-10">
             Welcome back, <span className="text-3xl" style={titleStyle}>{displayName}</span> 👋
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 relative z-10">
-            {daysUntil} days until we build the future
-          </p>
+          
+
+
         </motion.div>
 
         {/* Countdown */}
@@ -142,8 +142,8 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card p-5 glow-border"
-        >
+          className="glass-card p-5 glow-border">
+
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-4 h-4 text-primary" />
             <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
@@ -162,8 +162,8 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="glass-card p-5 space-y-4"
-          style={{ borderColor: "rgba(139, 92, 246, 0.15)" }}
-        >
+          style={{ borderColor: "rgba(139, 92, 246, 0.15)" }}>
+
           <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Your Status</h2>
           <div>
             <div className="flex justify-between text-sm mb-2">
@@ -175,8 +175,8 @@ const Index = () => {
                 className="h-full gradient-bar"
                 initial={{ width: 0 }}
                 animate={{ width: `${profileCompletion}%` }}
-                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-              />
+                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }} />
+
             </div>
             <p className="text-xs text-muted-foreground mt-2">You're {profileCompletion}% crew-ready! Complete your profile to stand out ✨</p>
           </div>
@@ -196,21 +196,21 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
+          transition={{ duration: 0.5, delay: 0.3 }}>
+
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
-            {quickActions.map(({ icon: Icon, label, to }) => (
-              <button
-                key={label}
-                onClick={() => navigate(to)}
-                className="pill-button flex items-center gap-2 whitespace-nowrap shrink-0 hover:border-primary/30 active:scale-95 transition-all"
-              >
+            {quickActions.map(({ icon: Icon, label, to }) =>
+            <button
+              key={label}
+              onClick={() => navigate(to)}
+              className="pill-button flex items-center gap-2 whitespace-nowrap shrink-0 hover:border-primary/30 active:scale-95 transition-all">
+
                 <span className="w-6 h-6 rounded-full gradient-primary flex items-center justify-center shrink-0">
                   <Icon className="w-3.5 h-3.5 text-white" />
                 </span>
                 {label}
               </button>
-            ))}
+            )}
           </div>
         </motion.div>
 
@@ -219,11 +219,11 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="space-y-3"
-        >
+          className="space-y-3">
+
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Announcements</h2>
-          {announcements.map((a) => (
-            <div key={a.id} className="glass-card-hover p-4 space-y-1">
+          {announcements.map((a) =>
+          <div key={a.id} className="glass-card-hover p-4 space-y-1">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="text-sm font-semibold leading-snug">{a.title}</h3>
                 {a.pinned && <Pin className="w-3 h-3 text-primary shrink-0 mt-0.5" />}
@@ -231,38 +231,38 @@ const Index = () => {
               <p className="text-xs text-muted-foreground leading-relaxed">{a.body}</p>
               <span className="text-[10px] text-primary/40">{a.time}</span>
             </div>
-          ))}
+          )}
         </motion.div>
 
         {/* Badges */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.45 }}
-        >
+          transition={{ duration: 0.5, delay: 0.45 }}>
+
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">
             Your Achievements — <span className="text-primary">{earnedCount}/{badges.length}</span> earned
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-            {badges.map((b) => (
-              <div
-                key={b.name}
-                className={`glass-card flex flex-col items-center gap-1.5 p-3 min-w-[72px] shrink-0 relative ${
-                  b.earned ? "glow-ring" : ""
-                }`}
-              >
+            {badges.map((b) =>
+            <div
+              key={b.name}
+              className={`glass-card flex flex-col items-center gap-1.5 p-3 min-w-[72px] shrink-0 relative ${
+              b.earned ? "glow-ring" : ""}`
+              }>
+
                 <span className={`text-xl ${b.earned ? "" : "opacity-40 blur-[1px]"}`}>{b.icon}</span>
                 <span className={`text-[10px] text-center leading-tight ${b.earned ? "text-foreground" : "text-muted-foreground/50"}`}>{b.name}</span>
-                {!b.earned && (
-                  <div className="absolute inset-0 rounded-2xl backdrop-blur-[1px] bg-background/30" />
-                )}
+                {!b.earned &&
+              <div className="absolute inset-0 rounded-2xl backdrop-blur-[1px] bg-background/30" />
+              }
               </div>
-            ))}
+            )}
           </div>
         </motion.div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
