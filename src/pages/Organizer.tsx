@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Users, Utensils, Send, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { postActivity } from "@/lib/activity";
-import { rankProjects, TRACK_MAP, type ScoreRow } from "@/lib/scoring";
+import { rankProjects, CRITERIA } from "@/lib/scoring";
 import MeshBackground from "@/components/MeshBackground";
 
 interface Profile {
@@ -298,13 +298,13 @@ const Organizer = () => {
 
             {/* Scores Tab */}
             <TabsContent value="scores" className="space-y-3 mt-4">
-              {ranked.length === 0 ? (
+              {ranked.length === 0 || ranked.every((r) => r.judgeCount === 0) ? (
                 <div className="glass-card p-8 text-center">
                   <p className="text-sm text-muted-foreground">No scores submitted yet</p>
                 </div>
               ) : (
-                ranked.map((r) => {
-                  const trackInfo = TRACK_MAP[r.track];
+                ranked.filter((r) => r.judgeCount > 0).map((r) => {
+                  const formatTrack = (t: string) => t.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                   return (
                     <div
                       key={r.projectId}
@@ -323,9 +323,7 @@ const Organizer = () => {
                           <h3 className="font-semibold text-sm truncate">{r.title}</h3>
                           <div className="flex items-center gap-2">
                             <span className="text-[11px] text-muted-foreground">{r.teamName}</span>
-                            <Badge variant="skill" className="text-[9px]">
-                              {trackInfo?.judgingName || r.track}
-                            </Badge>
+                            <Badge variant="skill" className="text-[9px]">{formatTrack(r.track)}</Badge>
                           </div>
                         </div>
                         <div className="text-center shrink-0">
@@ -333,20 +331,14 @@ const Organizer = () => {
                           <p className="text-[9px] text-muted-foreground">{r.judgeCount} judge{r.judgeCount !== 1 ? "s" : ""}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-5 gap-2 pt-1">
-                        {[
-                          { label: "Voice", score: r.avgVoice, max: 25 },
-                          { label: "Tech", score: r.avgTech, max: 25 },
-                          { label: "Memory", score: r.avgMemory, max: 20 },
-                          { label: "Impact", score: r.avgImpact, max: 20 },
-                          { label: "Present.", score: r.avgPresentation, max: 10 },
-                        ].map((s) => (
-                          <div key={s.label} className="text-center">
+                      <div className="grid grid-cols-4 md:grid-cols-7 gap-2 pt-1">
+                        {CRITERIA.map((c) => (
+                          <div key={c.key} className="text-center">
                             <div className="h-1 rounded-full bg-muted overflow-hidden mb-1">
-                              <div className="h-full gradient-bar" style={{ width: `${(s.score / s.max) * 100}%` }} />
+                              <div className="h-full gradient-bar" style={{ width: `${(r.avgScores[c.key] / c.max) * 100}%` }} />
                             </div>
-                            <p className="text-[10px] font-medium">{s.score}/{s.max}</p>
-                            <p className="text-[9px] text-muted-foreground">{s.label}</p>
+                            <p className="text-[10px] font-medium">{r.avgScores[c.key]}/{c.max}</p>
+                            <p className="text-[8px] text-muted-foreground leading-tight truncate">{c.label.split(" ")[0]}</p>
                           </div>
                         ))}
                       </div>
@@ -354,10 +346,10 @@ const Organizer = () => {
                   );
                 })
               )}
-              {ranked.length > 0 && (
+              {ranked.some((r) => r.judgeCount > 0) && (
                 <div className="glass-card p-3 text-center">
                   <p className="text-[10px] text-muted-foreground">
-                    Tie-break: 1) Memory &amp; Adaptivity &rarr; 2) Voice Experience &rarr; 3) Judge vote
+                    Tie-break: 1) Memory &amp; Adaptivity &rarr; 2) Conversation Feel &rarr; 3) Judge vote
                   </p>
                 </div>
               )}

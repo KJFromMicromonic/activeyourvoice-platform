@@ -1,91 +1,68 @@
-export const TRACK_MAP: Record<string, { judgingName: string; criteria: [string, string]; hints: [string, string] }> = {
-  "communication-human-experience": {
-    judgingName: "Communication & Human Experience",
-    criteria: ["Depth of Human Experience", "Ethics, Safety & Trust"],
-    hints: [
-      "Deep, memorable human experience (learning, support, collaboration)",
-      "Thoughtful design around bias, safety, privacy, user trust",
-    ],
-  },
-  "business-automation": {
-    judgingName: "Business Automation",
-    criteria: ["Level of Automation", "Measurable Value"],
-    hints: [
-      "Offloads meaningful chunks of real work end-to-end",
-      "Strong, quantifiable impact on cost, time, or quality",
-    ],
-  },
-  "developer-infrastructure-tools": {
-    judgingName: "Developer & Infrastructure Tools",
-    criteria: ["Value for Engineers", "Workflow Integration"],
-    hints: [
-      "Feels like a tool devs would actually adopt",
-      "Deeply embedded in realistic dev workflows",
-    ],
-  },
-};
-
 export interface ScoreRow {
-  voice_naturalness: number | null;
-  voice_turn_taking: number | null;
-  voice_persona: number | null;
-  voice_multimodal: number | null;
-  voice_accessibility: number | null;
-  tech_stability: number | null;
-  tech_architecture: number | null;
-  tech_actions: number | null;
-  tech_complexity: number | null;
-  tech_autonomy: number | null;
-  memory_short_term: number | null;
-  memory_long_term: number | null;
+  conversation_ux: number | null;
+  task_autonomy: number | null;
   memory_adaptivity: number | null;
-  memory_improvement: number | null;
-  impact_problem_clarity: number | null;
-  impact_feasibility: number | null;
-  track_criterion_1: number | null;
-  track_criterion_2: number | null;
-  presentation_clarity: number | null;
-  presentation_qa: number | null;
+  real_world_impact: number | null;
+  technical_depth: number | null;
+  partner_utilisation: number | null;
+  product_story: number | null;
 }
 
-export interface SectionTotals {
-  voice: number;       // /25
-  tech: number;        // /25
-  memory: number;      // /20
-  impact: number;      // /20
-  presentation: number; // /10
-  total: number;       // /100
-}
+export const CRITERIA = [
+  {
+    key: "conversation_ux" as const,
+    label: "Conversation Feel & UX",
+    max: 20,
+    hint: "How natural, fast, and effortless is the interaction across both voice and interface? Do the visuals, states, and prompts support the conversation?",
+  },
+  {
+    key: "task_autonomy" as const,
+    label: "Task Completion & Autonomy",
+    max: 15,
+    hint: "Does the agent actually get real tasks done end-to-end with minimal hand-holding? Does it take intelligent actions via tools/APIs, not just talk?",
+  },
+  {
+    key: "memory_adaptivity" as const,
+    label: "Memory & Adaptivity",
+    max: 20,
+    hint: "Does it remember relevant context (short-term + long-term) and change behavior accordingly? Is there any loop for improving from interactions?",
+  },
+  {
+    key: "real_world_impact" as const,
+    label: "Real-World Impact",
+    max: 15,
+    hint: "Is there a sharp problem and a clearly defined user? Would this clearly matter in the real world (time saved, quality, delight)?",
+  },
+  {
+    key: "technical_depth" as const,
+    label: "Technical Depth & Difficulty",
+    max: 10,
+    hint: "How non-trivial is the technical work (architecture, reasoning, robustness)? Did they tackle something meaningfully hard vs a thin wrapper?",
+  },
+  {
+    key: "partner_utilisation" as const,
+    label: "Partner Utilisation",
+    max: 10,
+    hint: "Do they make smart, relevant use of partner tech (Speechmatics, Backboard, etc.)? Is that integration essential to the solution?",
+  },
+  {
+    key: "product_story" as const,
+    label: "Product Story & Craft",
+    max: 10,
+    hint: 'One-sentence clarity: "It\'s for X, it does Y, and voice is the best way because Z." Demo, UI, and flows are tight; it feels like a real product.',
+  },
+] as const;
 
-const sum = (...vals: (number | null)[]): number =>
-  vals.reduce<number>((acc, v) => acc + (v ?? 0), 0);
+export type ScoreKey = (typeof CRITERIA)[number]["key"];
 
-export function calcSectionTotals(s: ScoreRow): SectionTotals {
-  const voiceRaw = sum(s.voice_naturalness, s.voice_turn_taking, s.voice_persona, s.voice_multimodal, s.voice_accessibility);
-  const techRaw = sum(s.tech_stability, s.tech_architecture, s.tech_actions, s.tech_complexity, s.tech_autonomy);
-  const memoryRaw = sum(s.memory_short_term, s.memory_long_term, s.memory_adaptivity, s.memory_improvement);
-  const impactCommon = sum(s.impact_problem_clarity, s.impact_feasibility);
-  const impactTrack = sum(s.track_criterion_1, s.track_criterion_2);
-  const presentationRaw = sum(s.presentation_clarity, s.presentation_qa);
-
-  const voice = voiceRaw * 1.25;
-  const tech = techRaw * 1.25;
-  const memory = memoryRaw * 1.0;
-  const impact = (impactCommon + impactTrack) * 1.0;
-  const presentation = presentationRaw * 1.0;
-
-  return {
-    voice: Math.round(voice * 100) / 100,
-    tech: Math.round(tech * 100) / 100,
-    memory: Math.round(memory * 100) / 100,
-    impact: Math.round(impact * 100) / 100,
-    presentation: Math.round(presentation * 100) / 100,
-    total: Math.round((voice + tech + memory + impact + presentation) * 100) / 100,
-  };
-}
-
-export function isScoreComplete(s: ScoreRow): boolean {
-  return Object.values(s).every((v) => v !== null && v !== undefined);
+export function calcTotal(s: ScoreRow): number {
+  return (s.conversation_ux ?? 0) +
+    (s.task_autonomy ?? 0) +
+    (s.memory_adaptivity ?? 0) +
+    (s.real_world_impact ?? 0) +
+    (s.technical_depth ?? 0) +
+    (s.partner_utilisation ?? 0) +
+    (s.product_story ?? 0);
 }
 
 export interface RankedProject {
@@ -94,11 +71,7 @@ export interface RankedProject {
   track: string;
   teamName: string;
   avgTotal: number;
-  avgVoice: number;
-  avgTech: number;
-  avgMemory: number;
-  avgImpact: number;
-  avgPresentation: number;
+  avgScores: Record<ScoreKey, number>;
   judgeCount: number;
   rank: number;
 }
@@ -107,55 +80,38 @@ export function rankProjects(
   projects: { id: string; title: string; track: string; team_name: string }[],
   allScores: (ScoreRow & { project_id: string })[]
 ): RankedProject[] {
-  const grouped: Record<string, SectionTotals[]> = {};
+  const grouped: Record<string, ScoreRow[]> = {};
   for (const score of allScores) {
     if (!grouped[score.project_id]) grouped[score.project_id] = [];
-    grouped[score.project_id].push(calcSectionTotals(score));
+    grouped[score.project_id].push(score);
   }
 
   const ranked: RankedProject[] = projects.map((p) => {
     const scores = grouped[p.id] || [];
     const count = scores.length;
-    if (count === 0) {
-      return {
-        projectId: p.id,
-        title: p.title,
-        track: p.track,
-        teamName: p.team_name,
-        avgTotal: 0,
-        avgVoice: 0,
-        avgTech: 0,
-        avgMemory: 0,
-        avgImpact: 0,
-        avgPresentation: 0,
-        judgeCount: 0,
-        rank: 0,
-      };
-    }
-    const avg = (key: keyof SectionTotals) =>
-      Math.round((scores.reduce((a, s) => a + s[key], 0) / count) * 100) / 100;
-
-    return {
-      projectId: p.id,
-      title: p.title,
-      track: p.track,
-      teamName: p.team_name,
-      avgTotal: avg("total"),
-      avgVoice: avg("voice"),
-      avgTech: avg("tech"),
-      avgMemory: avg("memory"),
-      avgImpact: avg("impact"),
-      avgPresentation: avg("presentation"),
-      judgeCount: count,
-      rank: 0,
+    const emptyAvg: Record<ScoreKey, number> = {
+      conversation_ux: 0, task_autonomy: 0, memory_adaptivity: 0,
+      real_world_impact: 0, technical_depth: 0, partner_utilisation: 0, product_story: 0,
     };
+
+    if (count === 0) {
+      return { projectId: p.id, title: p.title, track: p.track, teamName: p.team_name, avgTotal: 0, avgScores: emptyAvg, judgeCount: 0, rank: 0 };
+    }
+
+    const avgScores = { ...emptyAvg };
+    for (const key of Object.keys(avgScores) as ScoreKey[]) {
+      avgScores[key] = Math.round((scores.reduce((a, s) => a + (s[key] ?? 0), 0) / count) * 10) / 10;
+    }
+    const avgTotal = Math.round((scores.reduce((a, s) => a + calcTotal(s), 0) / count) * 10) / 10;
+
+    return { projectId: p.id, title: p.title, track: p.track, teamName: p.team_name, avgTotal, avgScores, judgeCount: count, rank: 0 };
   });
 
-  // Sort with tie-break: 1) total desc, 2) memory desc, 3) voice desc
+  // Sort: total desc, then memory desc, then conversation desc
   ranked.sort((a, b) => {
     if (b.avgTotal !== a.avgTotal) return b.avgTotal - a.avgTotal;
-    if (b.avgMemory !== a.avgMemory) return b.avgMemory - a.avgMemory;
-    return b.avgVoice - a.avgVoice;
+    if (b.avgScores.memory_adaptivity !== a.avgScores.memory_adaptivity) return b.avgScores.memory_adaptivity - a.avgScores.memory_adaptivity;
+    return b.avgScores.conversation_ux - a.avgScores.conversation_ux;
   });
 
   ranked.forEach((r, i) => { r.rank = i + 1; });

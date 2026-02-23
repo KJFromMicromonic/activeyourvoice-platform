@@ -283,29 +283,14 @@ export type Database = {
           id: string
           judge_id: string
           project_id: string
-          voice_naturalness: number | null
-          voice_turn_taking: number | null
-          voice_persona: number | null
-          voice_multimodal: number | null
-          voice_accessibility: number | null
-          tech_stability: number | null
-          tech_architecture: number | null
-          tech_actions: number | null
-          tech_complexity: number | null
-          tech_autonomy: number | null
-          memory_short_term: number | null
-          memory_long_term: number | null
+          conversation_ux: number | null
+          task_autonomy: number | null
           memory_adaptivity: number | null
-          memory_improvement: number | null
-          impact_problem_clarity: number | null
-          impact_feasibility: number | null
-          track_criterion_1: number | null
-          track_criterion_2: number | null
-          presentation_clarity: number | null
-          presentation_qa: number | null
-          notes_strengths: string | null
-          notes_improvements: string | null
-          notes_overall: string | null
+          real_world_impact: number | null
+          technical_depth: number | null
+          partner_utilisation: number | null
+          product_story: number | null
+          notes: string | null
           created_at: string
           updated_at: string
         }
@@ -313,29 +298,14 @@ export type Database = {
           id?: string
           judge_id: string
           project_id: string
-          voice_naturalness?: number | null
-          voice_turn_taking?: number | null
-          voice_persona?: number | null
-          voice_multimodal?: number | null
-          voice_accessibility?: number | null
-          tech_stability?: number | null
-          tech_architecture?: number | null
-          tech_actions?: number | null
-          tech_complexity?: number | null
-          tech_autonomy?: number | null
-          memory_short_term?: number | null
-          memory_long_term?: number | null
+          conversation_ux?: number | null
+          task_autonomy?: number | null
           memory_adaptivity?: number | null
-          memory_improvement?: number | null
-          impact_problem_clarity?: number | null
-          impact_feasibility?: number | null
-          track_criterion_1?: number | null
-          track_criterion_2?: number | null
-          presentation_clarity?: number | null
-          presentation_qa?: number | null
-          notes_strengths?: string | null
-          notes_improvements?: string | null
-          notes_overall?: string | null
+          real_world_impact?: number | null
+          technical_depth?: number | null
+          partner_utilisation?: number | null
+          product_story?: number | null
+          notes?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -343,29 +313,14 @@ export type Database = {
           id?: string
           judge_id?: string
           project_id?: string
-          voice_naturalness?: number | null
-          voice_turn_taking?: number | null
-          voice_persona?: number | null
-          voice_multimodal?: number | null
-          voice_accessibility?: number | null
-          tech_stability?: number | null
-          tech_architecture?: number | null
-          tech_actions?: number | null
-          tech_complexity?: number | null
-          tech_autonomy?: number | null
-          memory_short_term?: number | null
-          memory_long_term?: number | null
+          conversation_ux?: number | null
+          task_autonomy?: number | null
           memory_adaptivity?: number | null
-          memory_improvement?: number | null
-          impact_problem_clarity?: number | null
-          impact_feasibility?: number | null
-          track_criterion_1?: number | null
-          track_criterion_2?: number | null
-          presentation_clarity?: number | null
-          presentation_qa?: number | null
-          notes_strengths?: string | null
-          notes_improvements?: string | null
-          notes_overall?: string | null
+          real_world_impact?: number | null
+          technical_depth?: number | null
+          partner_utilisation?: number | null
+          product_story?: number | null
+          notes?: string | null
           created_at?: string
           updated_at?: string
         }
