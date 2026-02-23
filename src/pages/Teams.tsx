@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Mic, Brain, MessageSquare, Users, Lightbulb, ArrowRight } from "lucide-react";
+import { Mic, Brain, MessageSquare, Users, Lightbulb, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,6 +77,8 @@ const Teams = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const [expandedTrack, setExpandedTrack] = useState<string | null>(null);
+
   const trackCounts: Record<string, number> = {};
   teams.forEach((t) => { trackCounts[t.track] = (trackCounts[t.track] || 0) + 1; });
 
@@ -112,6 +114,8 @@ const Teams = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {tracksMeta.map((track, i) => {
             const count = trackCounts[track.id] || 0;
+            const isExpanded = expandedTrack === track.id;
+            const trackTeams = teams.filter((t) => t.track === track.id);
             return (
               <motion.div
                 key={track.id}
@@ -119,6 +123,7 @@ const Teams = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15 + i * 0.08 }}
                 className="glass-card-hover p-5 space-y-3 cursor-pointer"
+                onClick={() => setExpandedTrack(isExpanded ? null : track.id)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -130,13 +135,45 @@ const Teams = () => {
                       <p className="text-[11px] text-muted-foreground">{count}/{track.maxTeams} teams registered</p>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{track.description}</p>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full gradient-bar transition-all duration-500" style={{ width: `${(count / track.maxTeams) * 100}%` }} />
                 </div>
                 <p className="text-[10px] text-primary font-medium">{track.maxTeams - count} spots left</p>
+
+                {isExpanded && (
+                  <div className="pt-2 border-t border-border/30 space-y-2">
+                    {trackTeams.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-1">No teams yet</p>
+                    ) : (
+                      trackTeams.map((team) => {
+                        const leader = leaderProfiles[team.leader_id];
+                        const count = memberCounts[team.id] || 0;
+                        return (
+                          <div
+                            key={team.id}
+                            className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/teams/${team.id}`); }}
+                          >
+                            {leader && (
+                              <div className="w-6 h-6 rounded-full gradient-primary flex items-center justify-center text-[9px] font-bold text-white overflow-hidden shrink-0">
+                                {leader.avatar_url ? (
+                                  <img src={leader.avatar_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  getInitials(leader.first_name, leader.last_name)
+                                )}
+                              </div>
+                            )}
+                            <span className="text-xs font-medium flex-1 truncate">{team.name}</span>
+                            <span className="text-[10px] text-muted-foreground shrink-0">{count}/{team.max_members}</span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </motion.div>
             );
           })}
