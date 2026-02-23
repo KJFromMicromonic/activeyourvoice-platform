@@ -157,15 +157,6 @@ const Auth = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="flex items-center gap-3 my-2">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground" onClick={() => navigate("/onboarding")}>
-          Don't log in →
-        </Button>
       </motion.div>
     </div>
   );

@@ -196,7 +196,7 @@ const Onboarding = () => {
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Persistent waveform + progress for steps 1-5 */}
         {isStepScreen && (
-          <div className="px-5 pt-4 space-y-3">
+          <div className="px-5 pt-4 space-y-3 max-w-lg md:max-w-xl mx-auto w-full">
             {/* Back button top-left */}
             <button
               onClick={goBack}
@@ -230,15 +230,15 @@ const Onboarding = () => {
               animate="center"
               exit="exit"
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className={`w-full max-w-md ${isStepScreen ? "" : "mx-auto"}`}
+              className="w-full max-w-md md:max-w-xl mx-auto"
             >
               {/* Screen 0 — Welcome Splash */}
               {step === 0 && (
-                <div className="text-center space-y-6">
+                <div className="text-center space-y-6 md:space-y-8">
                   <div className="relative inline-block">
                     <div className="absolute inset-0 rounded-full gradient-primary blur-3xl opacity-30 scale-150 animate-pulse" />
                     <h1
-                      className="relative text-5xl sm:text-6xl font-black italic leading-[0.95] tracking-tight"
+                      className="relative text-5xl sm:text-6xl md:text-7xl font-black italic leading-[0.95] tracking-tight"
                       style={titleStyle}
                     >
                       Activate
@@ -248,18 +248,18 @@ const Onboarding = () => {
                   </div>
                   <Waveform />
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Speechmatics × The AI Collective</p>
-                    <p className="text-sm font-medium">24h Residency Hackathon</p>
-                    <p className="text-sm text-muted-foreground">The Builders Factory, Paris</p>
-                    <p className="text-sm text-muted-foreground">Feb 28 – March 1, 2026</p>
+                    <p className="text-sm md:text-base text-muted-foreground">Speechmatics × The AI Collective</p>
+                    <p className="text-sm md:text-base font-medium">24h Residency Hackathon</p>
+                    <p className="text-sm md:text-base text-muted-foreground">The Builders Factory, Paris</p>
+                    <p className="text-sm md:text-base text-muted-foreground">Feb 28 – March 1, 2026</p>
                   </div>
-                  <p className="text-xs text-muted-foreground italic">
+                  <p className="text-xs md:text-sm text-muted-foreground italic">
                     "In 2026, the interface is no longer a screen — it is a conversation."
                   </p>
                   <Button
                     variant="gradient"
                     size="lg"
-                    className="mt-4 w-full text-base h-14 rounded-2xl animate-[subtle-pulse_4s_ease-in-out_infinite]"
+                    className="mt-4 w-full md:w-72 text-base h-14 rounded-2xl animate-[subtle-pulse_4s_ease-in-out_infinite]"
                     style={{ boxShadow: "0 0 25px hsl(263 84% 58% / 0.3), 0 0 50px hsl(217 91% 60% / 0.15)" }}
                     onClick={goNext}
                   >
@@ -494,7 +494,7 @@ const Onboarding = () => {
 
               {/* Done Screen */}
               {step === 6 && (
-                <div className="text-center space-y-6">
+                <div className="text-center space-y-6 md:space-y-8">
                   <div className="relative">
                     <div className="confetti-container">
                       {[...Array(20)].map((_, i) => (
@@ -505,24 +505,24 @@ const Onboarding = () => {
                         }} />
                       ))}
                     </div>
-                    <Sparkles className="w-16 h-16 mx-auto text-primary animate-pulse" />
+                    <Sparkles className="w-16 h-16 md:w-20 md:h-20 mx-auto text-primary animate-pulse" />
                   </div>
-                  <h2 className="text-3xl font-extrabold gradient-text">You're crew-ready! 🎉</h2>
+                  <h2 className="text-3xl md:text-4xl font-extrabold gradient-text">You're crew-ready!</h2>
                   {showPoints && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 200 }}
-                      className="text-2xl font-bold gradient-text"
+                      className="text-2xl md:text-3xl font-bold gradient-text"
                     >
-                      +50 points ⚡
+                      +50 points
                     </motion.div>
                   )}
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm md:text-base text-muted-foreground">
                     Welcome to the crew. 100 builders. 24 hours.<br />Let's make something incredible.
                   </p>
-                  <Button variant="gradient" size="lg" className="w-full text-base h-14 rounded-2xl" onClick={finish}>
-                    Enter the Hub →
+                  <Button variant="gradient" size="lg" className="w-full md:w-72 text-base h-14 rounded-2xl" onClick={finish}>
+                    Enter the Hub
                   </Button>
                 </div>
               )}
@@ -532,7 +532,7 @@ const Onboarding = () => {
 
         {/* Full-width Next CTA anchored to bottom for steps 1-5 */}
         {isStepScreen && (
-          <div className="px-5 pb-8 space-y-2">
+          <div className="px-5 pb-8 space-y-2 max-w-lg md:max-w-xl mx-auto w-full">
             {step === 5 && (
               <button
                 className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
