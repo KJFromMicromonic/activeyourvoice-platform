@@ -1,5 +1,5 @@
 export const TRACK_MAP: Record<string, { judgingName: string; criteria: [string, string]; hints: [string, string] }> = {
-  "voice-interfaces": {
+  "communication-human-experience": {
     judgingName: "Communication & Human Experience",
     criteria: ["Depth of Human Experience", "Ethics, Safety & Trust"],
     hints: [
@@ -7,7 +7,7 @@ export const TRACK_MAP: Record<string, { judgingName: string; criteria: [string,
       "Thoughtful design around bias, safety, privacy, user trust",
     ],
   },
-  "conversational-ai": {
+  "business-automation": {
     judgingName: "Business Automation",
     criteria: ["Level of Automation", "Measurable Value"],
     hints: [
@@ -15,7 +15,7 @@ export const TRACK_MAP: Record<string, { judgingName: string; criteria: [string,
       "Strong, quantifiable impact on cost, time, or quality",
     ],
   },
-  "ai-agents-tools": {
+  "developer-infrastructure-tools": {
     judgingName: "Developer & Infrastructure Tools",
     criteria: ["Value for Engineers", "Workflow Integration"],
     hints: [

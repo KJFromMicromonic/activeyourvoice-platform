@@ -7,11 +7,11 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { timelineDays, parseTimeRange, HACKATHON_DATES } from "@/lib/schedule-utils";
 
 const judges = [
-  { name: "Kartik Ahuja", title: "Research Scientist", company: "Meta", track: "Voice Interfaces" },
-  { name: "Edgar", title: "DevRel", company: "Speechmatics", track: "Voice Interfaces" },
-  { name: "Ekta Sengar", title: "Product Manager", company: "Atlassian", track: "Conversational AI" },
-  { name: "Tharsan", title: "Lead AI Engineer", company: "PMU", track: "Conversational AI" },
-  { name: "Mohamed Ahmednah", title: "Founder & CTO", company: "Quicksort", track: "AI Agents & Tools" },
+  { name: "Kartik Ahuja", title: "Research Scientist", company: "Meta", track: "Communication & Human Experience" },
+  { name: "Edgar", title: "DevRel", company: "Speechmatics", track: "Communication & Human Experience" },
+  { name: "Ekta Sengar", title: "Product Manager", company: "Atlassian", track: "Business Automation" },
+  { name: "Tharsan", title: "Lead AI Engineer", company: "PMU", track: "Business Automation" },
+  { name: "Mohamed Ahmednah", title: "Founder & CTO", company: "Quicksort", track: "Developer & Infrastructure Tools" },
 ];
 
 const criteria = [

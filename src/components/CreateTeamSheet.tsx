@@ -14,9 +14,9 @@ import { postActivity } from "@/lib/activity";
 const SKILLS = ["Frontend", "Backend", "Full-stack", "AI/ML", "Design", "Product", "Data Science", "DevOps", "Business/Strategy", "Voice/NLP", "Other"];
 
 const tracks = [
-  { id: "voice-interfaces", name: "Voice Interfaces", icon: Mic, color: "from-purple-500 to-violet-600", maxTeams: 7 },
-  { id: "conversational-ai", name: "Conversational AI", icon: MessageSquare, color: "from-blue-500 to-cyan-500", maxTeams: 7 },
-  { id: "ai-agents-tools", name: "AI Agents & Tools", icon: Brain, color: "from-indigo-500 to-blue-600", maxTeams: 7 },
+  { id: "communication-human-experience", name: "Communication & Human Experience", icon: Mic, color: "from-purple-500 to-violet-600", maxTeams: 7 },
+  { id: "business-automation", name: "Business Automation", icon: MessageSquare, color: "from-blue-500 to-cyan-500", maxTeams: 7 },
+  { id: "developer-infrastructure-tools", name: "Developer & Infrastructure Tools", icon: Brain, color: "from-indigo-500 to-blue-600", maxTeams: 7 },
 ];
 
 const titleStyle: React.CSSProperties = {

@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import ProjectSubmitSheet from "@/components/ProjectSubmitSheet";
 
-const TRACKS = ["All", "Voice Interfaces", "Conversational AI", "AI Agents & Tools"];
+const TRACKS = ["All", "Communication & Human Experience", "Business Automation", "Developer & Infrastructure Tools"];
 
 const trackIdMap: Record<string, string> = {
-  "Voice Interfaces": "voice-interfaces",
-  "Conversational AI": "conversational-ai",
-  "AI Agents & Tools": "ai-agents-tools",
+  "Communication & Human Experience": "communication-human-experience",
+  "Business Automation": "business-automation",
+  "Developer & Infrastructure Tools": "developer-infrastructure-tools",
 };
 
 interface ProjectRow {

@@ -9,9 +9,9 @@ import { toast } from "sonner";
 import { postActivity } from "@/lib/activity";
 
 const TRACKS = [
-  { id: "voice-interfaces", name: "Voice Interfaces" },
-  { id: "conversational-ai", name: "Conversational AI" },
-  { id: "ai-agents-tools", name: "AI Agents & Tools" },
+  { id: "communication-human-experience", name: "Communication & Human Experience" },
+  { id: "business-automation", name: "Business Automation" },
+  { id: "developer-infrastructure-tools", name: "Developer & Infrastructure Tools" },
 ];
 
 const titleStyle: React.CSSProperties = {
