@@ -57,8 +57,8 @@ const calcCompletion = (profile: any) => {
   return Math.round(filled / total * 100);
 };
 
-const quickActions: { icon: React.ElementType; label: string; to?: string; href?: string }[] = [
-{ icon: MessageSquare, label: "Talk to AURA", href: AURA_URL },
+const quickActions: { icon: React.ElementType; label: string; to?: string; href?: string; disabled?: boolean }[] = [
+{ icon: MessageSquare, label: "Talk to AURA", href: AURA_URL, disabled: true },
 { icon: Users, label: "Find a team", to: "/teams" },
 { icon: Rocket, label: "Browse people", to: "/people" },
 { icon: Calendar, label: "View schedule", to: "/event" },
@@ -292,16 +292,17 @@ const Index = () => {
           transition={{ duration: 0.5, delay: 0.3 }}>
 
           <div className="flex gap-2 overflow-x-auto md:flex-wrap pb-2 -mx-1 px-1 scrollbar-hide">
-            {quickActions.map(({ icon: Icon, label, to, href }) =>
+            {quickActions.map(({ icon: Icon, label, to, href, disabled }) =>
             <button
               key={label}
-              onClick={() => href ? window.open(href, "_blank", "noopener") : navigate(to!)}
-              className="pill-button flex items-center gap-2 whitespace-nowrap shrink-0 hover:border-primary/30 active:scale-95 transition-all">
+              disabled={disabled}
+              onClick={() => !disabled && (href ? window.open(href, "_blank", "noopener") : navigate(to!))}
+              className={`pill-button flex items-center gap-2 whitespace-nowrap shrink-0 transition-all ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary/30 active:scale-95"}`}>
 
-                <span className="w-6 h-6 rounded-full gradient-primary flex items-center justify-center shrink-0">
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${disabled ? "bg-muted" : "gradient-primary"}`}>
                   <Icon className="w-3.5 h-3.5 text-white" />
                 </span>
-                {label}
+                {label}{disabled ? " (Soon)" : ""}
               </button>
             )}
           </div>
