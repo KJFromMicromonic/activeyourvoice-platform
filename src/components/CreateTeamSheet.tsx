@@ -20,7 +20,7 @@ const tracks = [
 ];
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: "'Playfair Display', serif",
+  fontFamily: "'Orbitron', sans-serif",
   background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
@@ -241,7 +241,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                 {step === 0 && (
                   <div className="space-y-5 pt-2">
                     <div>
-                      <h2 className="text-2xl font-black italic" style={titleStyle}>Name your crew</h2>
+                      <h2 className="text-2xl font-bold uppercase tracking-wide" style={titleStyle}>Name your crew</h2>
                       <p className="text-xs text-muted-foreground mt-1">Every great product starts with a name</p>
                     </div>
                     <div className="gradient-primary h-px w-12 rounded-full" />
@@ -271,7 +271,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                 {step === 1 && (
                   <div className="space-y-5 pt-2">
                     <div>
-                      <h2 className="text-2xl font-black italic" style={titleStyle}>Who do you need?</h2>
+                      <h2 className="text-2xl font-bold uppercase tracking-wide" style={titleStyle}>Who do you need?</h2>
                       <p className="text-xs text-muted-foreground mt-1">Pick the skills that'll make your team unstoppable</p>
                     </div>
                     <div className="gradient-primary h-px w-12 rounded-full" />
@@ -315,7 +315,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                 {step === 2 && (
                   <div className="space-y-5 pt-2">
                     <div>
-                      <h2 className="text-2xl font-black italic" style={titleStyle}>Pick your track</h2>
+                      <h2 className="text-2xl font-bold uppercase tracking-wide" style={titleStyle}>Pick your track</h2>
                       <p className="text-xs text-muted-foreground mt-1">Choose your battlefield</p>
                     </div>
                     <div className="gradient-primary h-px w-12 rounded-full" />
@@ -364,7 +364,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                 {step === 3 && (
                   <div className="space-y-5 pt-2">
                     <div>
-                      <h2 className="text-2xl font-black italic" style={titleStyle}>Invite your crew</h2>
+                      <h2 className="text-2xl font-bold uppercase tracking-wide" style={titleStyle}>Invite your crew</h2>
                       <p className="text-xs text-muted-foreground mt-1">Already know who you want? Bring them in</p>
                     </div>
                     <div className="gradient-primary h-px w-12 rounded-full" />
@@ -429,7 +429,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                       transition={{ type: "spring", duration: 0.6 }}
                     >
                       <div className="text-5xl mb-4">🚀</div>
-                      <h2 className="text-2xl font-black italic" style={titleStyle}>Team created!</h2>
+                      <h2 className="text-2xl font-bold uppercase tracking-wide" style={titleStyle}>Team created!</h2>
                       <p className="text-lg font-bold mt-2 glow-ring inline-block px-4 py-1 rounded-full glass-card">{teamName}</p>
                     </motion.div>
                     <Badge variant="skill" className="text-xs">

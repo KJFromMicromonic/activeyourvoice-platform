@@ -13,7 +13,7 @@ const TARGET_DATE = new Date("2026-02-28T15:00:00+01:00");
 const AURA_URL = "https://concierge.activateyourvoice.tech";
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: "'Playfair Display', serif",
+  fontFamily: "'Orbitron', sans-serif",
   background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",

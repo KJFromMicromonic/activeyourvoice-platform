@@ -15,7 +15,7 @@ const TRACKS = [
 ];
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: "'Playfair Display', serif",
+  fontFamily: "'Orbitron', sans-serif",
   background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
@@ -94,7 +94,7 @@ const PostIdeaSheet = ({ children }: PostIdeaSheetProps) => {
           <div className="flex-1 overflow-y-auto px-5 pb-6 pt-4">
             <div className="max-w-md mx-auto space-y-5">
               <div>
-                <h2 className="text-2xl font-black italic" style={titleStyle}>Post an idea</h2>
+                <h2 className="text-2xl font-bold uppercase tracking-wide" style={titleStyle}>Post an idea</h2>
                 <p className="text-xs text-muted-foreground mt-1">Share what you want to build and find like-minded teammates</p>
               </div>
               <div className="gradient-primary h-px w-12 rounded-full" />

@@ -27,7 +27,7 @@ const slideVariants = {
 };
 
 const titleStyle = {
-  fontFamily: "'Playfair Display', serif",
+  fontFamily: "'Orbitron', sans-serif",
   background: "linear-gradient(135deg, hsl(263, 84%, 58%), hsl(217, 91%, 60%))",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
@@ -238,7 +238,7 @@ const Onboarding = () => {
                   <div className="relative inline-block">
                     <div className="absolute inset-0 rounded-full gradient-primary blur-3xl opacity-30 scale-150 animate-pulse" />
                     <h1
-                      className="relative text-5xl sm:text-6xl md:text-7xl font-black italic leading-[0.95] tracking-tight"
+                      className="relative text-4xl sm:text-5xl md:text-6xl font-bold uppercase leading-[1] tracking-wide"
                       style={titleStyle}
                     >
                       Activate
@@ -272,7 +272,7 @@ const Onboarding = () => {
               {step === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl sm:text-4xl font-black italic leading-tight" style={titleStyle}>
+                    <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wide leading-tight" style={titleStyle}>
                       First, who are you? ⚡
                     </h2>
                     <p className="text-sm text-muted-foreground mt-2">Let's put a face to the name</p>
@@ -313,7 +313,7 @@ const Onboarding = () => {
               {step === 2 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl sm:text-4xl font-black italic leading-tight" style={titleStyle}>
+                    <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wide leading-tight" style={titleStyle}>
                       What's your superpower? 💡
                     </h2>
                     <p className="text-sm text-muted-foreground mt-2">Show the crew what you bring to the table</p>
@@ -334,7 +334,7 @@ const Onboarding = () => {
               {step === 3 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl sm:text-4xl font-black italic leading-tight" style={titleStyle}>
+                    <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wide leading-tight" style={titleStyle}>
                       We want to take care of you 🤗
                     </h2>
                     <p className="text-sm text-muted-foreground mt-2">Good food, good vibes — we've got you covered</p>
@@ -433,7 +433,7 @@ const Onboarding = () => {
               {step === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-3xl sm:text-4xl font-black italic leading-tight" style={titleStyle}>
+                    <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wide leading-tight" style={titleStyle}>
                       What are you here for? 🎯
                     </h2>
                     <p className="text-sm text-muted-foreground mt-2">No wrong answer — we'll help you find your people</p>
@@ -464,7 +464,7 @@ const Onboarding = () => {
               {step === 5 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-3xl sm:text-4xl font-black italic leading-tight" style={titleStyle}>
+                    <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wide leading-tight" style={titleStyle}>
                       Tell the crew about you ✍️
                     </h2>
                     <p className="text-sm text-muted-foreground mt-2">Almost there — this helps us make it unforgettable</p>

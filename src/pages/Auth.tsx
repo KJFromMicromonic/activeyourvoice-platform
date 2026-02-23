@@ -104,9 +104,9 @@ const Auth = () => {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-6 text-center">
         <div className="space-y-2">
           <h1
-            className="text-3xl font-extrabold"
+            className="text-2xl md:text-3xl font-bold uppercase tracking-wide"
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Orbitron', sans-serif",
               background: "linear-gradient(135deg, hsl(263, 84%, 58%), hsl(217, 91%, 60%))",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",

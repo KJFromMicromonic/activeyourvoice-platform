@@ -24,7 +24,7 @@ const Layout = () => {
           <span
             className="font-bold text-sm"
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Orbitron', sans-serif",
               background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",

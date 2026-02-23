@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { TRACK_MAP, calcSectionTotals, type ScoreRow } from "@/lib/scoring";
 
 const titleStyle: React.CSSProperties = {
-  fontFamily: "'Playfair Display', serif",
+  fontFamily: "'Orbitron', sans-serif",
   background: "linear-gradient(135deg, hsl(263,84%,58%), hsl(217,91%,60%))",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
@@ -245,7 +245,7 @@ const JudgeScoringSheet = ({ project, existingScore, onScored, children }: Judge
           <div className="px-5 pt-4 pb-3 border-b border-border/30">
             <div className="flex items-start justify-between gap-3 max-w-2xl mx-auto">
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-black italic truncate" style={titleStyle}>{project.title}</h2>
+                <h2 className="text-lg font-bold uppercase tracking-wide truncate" style={titleStyle}>{project.title}</h2>
                 <p className="text-xs text-muted-foreground truncate">{project.team_name} &middot; {trackInfo?.judgingName || project.track}</p>
                 <div className="flex gap-2 mt-1">
                   {project.demo_url && (
