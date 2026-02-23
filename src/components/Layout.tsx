@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { Home, Users, Rocket, FolderOpen, User, Sun, Moon } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Home, Users, Rocket, FolderOpen, User, Sun, Moon, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -12,6 +13,12 @@ const navItems = [
 
 const Layout = () => {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
     <div className="min-h-screen bg-background md:flex">
@@ -57,7 +64,7 @@ const Layout = () => {
             </NavLink>
           ))}
         </nav>
-        <div className="px-3 pb-4">
+        <div className="px-3 pb-4 space-y-1">
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all w-full"
@@ -73,6 +80,13 @@ const Layout = () => {
                 <span>Dark Mode</span>
               </>
             )}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all w-full"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Log Out</span>
           </button>
         </div>
       </aside>

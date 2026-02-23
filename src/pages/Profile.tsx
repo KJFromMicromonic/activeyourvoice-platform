@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, Check, ChevronRight, Trophy, Users, Rocket } from "lucide-react";
+import { Camera, Check, ChevronRight, Trophy, Users, Rocket, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { computeBadges, type EarnedBadge } from "@/lib/badges";
 
 const PROFILE_STEPS = [
@@ -24,9 +25,15 @@ const isFieldFilled = (profile: any, field: string) => {
 };
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"profile" | "badges" | "team">("profile");
   const [profile, setProfile] = useState<any>(null);
   const [badges, setBadges] = useState<EarnedBadge[]>([]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -216,6 +223,15 @@ const Profile = () => {
           )}
         </motion.div>
       )}
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+      >
+        <LogOut className="w-4 h-4" />
+        Log Out
+      </button>
     </div>
   );
 };

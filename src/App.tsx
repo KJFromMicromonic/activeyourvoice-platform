@@ -41,21 +41,23 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     if (params.get("onboarded") === "1") {
       setOnboarded(true);
       // Clean up the URL param
-      params.delete("onboarded");
-      const newUrl = params.toString()
-        ? `${window.location.pathname}?${params.toString()}`
-        : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      window.history.replaceState({}, "", window.location.pathname);
       return;
     }
-    supabase
-      .from("profiles")
-      .select("onboarding_completed")
-      .eq("user_id", session.user.id)
-      .single()
-      .then(({ data }) => {
+    // Poll briefly to handle race condition where DB write is in-flight
+    let cancelled = false;
+    const check = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("user_id", session.user.id)
+        .single();
+      if (!cancelled) {
         setOnboarded(data?.onboarding_completed ?? false);
-      });
+      }
+    };
+    check();
+    return () => { cancelled = true; };
   }, [session]);
 
   if (session === undefined) {

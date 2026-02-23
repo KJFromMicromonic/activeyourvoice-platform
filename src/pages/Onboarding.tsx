@@ -113,7 +113,8 @@ const Onboarding = () => {
         }
       }
 
-      const { error } = await supabase.from("profiles").update({
+      const { error } = await supabase.from("profiles").upsert({
+        user_id: user.id,
         first_name: firstName,
         last_name: lastName,
         avatar_url,
@@ -133,7 +134,7 @@ const Onboarding = () => {
         feedback: feedback || null,
         onboarding_completed: true,
         points: 50,
-      }).eq("user_id", user.id);
+      }, { onConflict: "user_id" });
 
       if (error) {
         toast.error("Failed to save profile");
