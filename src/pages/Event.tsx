@@ -1,93 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Users, Scale, BookOpen, MapPin, Handshake, Trophy, ExternalLink, Clock, Coffee, Moon, Sun, PartyPopper, Utensils, ChevronDown, Megaphone, Wrench, Laptop, AlertTriangle, Wine } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-
-interface TimelineEvent {
-  time: string;
-  event: string;
-  icon: React.ElementType;
-  highlight?: boolean;
-  subItems?: string[];
-}
-
-interface TimelineDay {
-  date: string;
-  label: string;
-  emoji: string;
-  isMilestone?: boolean;
-  events: TimelineEvent[];
-}
-
-const timelineDays: TimelineDay[] = [
-  {
-    date: "Monday, Feb 23",
-    label: "Track Announcement",
-    emoji: "📅",
-    isMilestone: true,
-    events: [{ time: "", event: "Announcement of 3 tracks + team formation facilitation", icon: Megaphone }],
-  },
-  {
-    date: "Wednesday, Feb 25",
-    label: "Partners Demo",
-    emoji: "📅",
-    isMilestone: true,
-    events: [{ time: "", event: "Partners demo + DoraHack team submission", icon: Handshake }],
-  },
-  {
-    date: "Thursday, Feb 26",
-    label: "Deadline Day",
-    emoji: "📅",
-    isMilestone: true,
-    events: [
-      { time: "", event: "Deadline: Team submission & perks redeem", icon: AlertTriangle, highlight: true },
-      { time: "", event: "Codex Access — organisation ID distributed", icon: Laptop },
-    ],
-  },
-  {
-    date: "Saturday, Feb 28",
-    label: "Hackathon Day 1",
-    emoji: "📅",
-    events: [
-      { time: "2:00 PM – 3:00 PM", event: "Check-in & welcome coffee ☕", icon: Coffee },
-      {
-        time: "3:00 PM – 3:30 PM", event: "Opening ceremony 🎤", icon: PartyPopper, highlight: true,
-        subItems: [
-          "Welcome speech: AIC + Builders Factory",
-          "Introduction to hackathon rules & tracks",
-          "Introduction to mentors, jury & judging criteria",
-          "Agenda overview",
-          "Perks from sponsors",
-        ],
-      },
-      { time: "3:30 PM – 4:15 PM", event: "Partners workshop 🤝", icon: Wrench },
-      { time: "4:15 PM – 8:00 PM", event: "Working session #1 💻", icon: Laptop },
-      { time: "8:00 PM – 9:00 PM", event: "Dinner 🍽️", icon: Utensils },
-      { time: "8:30 PM – 11:00 PM", event: "Working session #2 💻", icon: Laptop },
-      { time: "11:00 PM", event: "Overnight build begins 🌙", icon: Moon },
-    ],
-  },
-  {
-    date: "Sunday, March 1",
-    label: "Hackathon Day 2",
-    emoji: "📅",
-    events: [
-      { time: "9:00 AM", event: "Coffee ☕", icon: Coffee },
-      { time: "9:00 AM – 12:30 PM", event: "Working session #3 💻", icon: Laptop },
-      { time: "12:30 PM – 1:30 PM", event: "Lunch 🍽️", icon: Utensils },
-      { time: "12:30 PM – 5:00 PM", event: "Final working session 💻", icon: Laptop },
-      { time: "4:30 PM", event: "Jury arrival time 🧑‍⚖️", icon: Scale },
-      { time: "5:00 PM", event: "Project submission deadline 🚨", icon: Clock, highlight: true },
-      { time: "5:00 PM – 6:00 PM", event: "Demo & jury fire 🔥 (3 min pitch + Q&A)", icon: Trophy, highlight: true },
-      { time: "6:00 PM – 6:30 PM", event: "Top 6 teams demo 🏆", icon: Trophy, highlight: true },
-      { time: "6:30 PM – 7:00 PM", event: "Jury deliberation & networking 🤝", icon: Handshake },
-      { time: "7:00 PM", event: "Result announcement & prizes 🎉", icon: PartyPopper, highlight: true },
-      { time: "7:00 PM – 8:00 PM", event: "Cocktail celebration 🥂", icon: Wine },
-    ],
-  },
-];
+import { timelineDays, parseTimeRange, HACKATHON_DATES } from "@/lib/schedule-utils";
 
 const judges = [
   { name: "Kartik Ahuja", title: "Research Scientist", company: "Meta", track: "Voice Interfaces" },
@@ -108,16 +25,46 @@ const criteria = [
 const partners = [
   { name: "Speechmatics", role: "Title Partner", perks: "$3,000 credits per winning team + $3,000 special prize" },
   { name: "OpenAI", role: "AI Partner", perks: "$1,000 API credits + 1yr ChatGPT Pro + GPT-5.3-Codex access" },
-  { name: "Backboard.io", role: "Platform Partner", perks: "$100 credits/person + €300 cash prize" },
+  { name: "Backboard.io", role: "Platform Partner", perks: "$100 credits/person + \u20ac300 cash prize" },
   { name: "Station F", role: "Space Partner", perks: "1 month access per winning team member" },
   { name: "42 Entrepreneurs", role: "Co-Host", perks: "Venue & community partner" },
 ];
 
 const ScheduleTab = () => {
   const [openDays, setOpenDays] = useState<string[]>(["Saturday, Feb 28", "Sunday, March 1"]);
+  const [now, setNow] = useState(new Date());
+  const activeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
 
   const toggleDay = (date: string) => {
     setOpenDays((prev) => prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]);
+  };
+
+  const isActive = (dayDate: string, timeStr: string): boolean => {
+    const range = parseTimeRange(dayDate, timeStr);
+    if (!range) return false;
+    if (range.end) {
+      return now >= range.start && now <= range.end;
+    }
+    const windowEnd = new Date(range.start.getTime() + 30 * 60 * 1000);
+    return now >= range.start && now <= windowEnd;
+  };
+
+  const isNext = (dayDate: string, timeStr: string): boolean => {
+    const range = parseTimeRange(dayDate, timeStr);
+    if (!range) return false;
+    const diff = range.start.getTime() - now.getTime();
+    return diff > 0 && diff <= 2 * 60 * 60 * 1000; // within 2 hours
   };
 
   return (
@@ -144,32 +91,58 @@ const ScheduleTab = () => {
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openDays.includes(day.date) ? "rotate-180" : ""}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-1 space-y-1 pl-2 border-l-2 border-primary/20 ml-4">
-                {day.events.map((ev, j) => (
-                  <motion.div
-                    key={j}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: j * 0.03 }}
-                    className={`flex items-start gap-3 p-2.5 rounded-lg ${ev.highlight ? "glass-card border-primary/20" : ""}`}
-                  >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${ev.highlight ? "gradient-primary" : "bg-muted"}`}>
-                      <ev.icon className="w-3.5 h-3.5 text-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {ev.time && <p className="text-[10px] text-muted-foreground font-medium">{ev.time}</p>}
-                      <p className={`text-sm ${ev.highlight ? "font-semibold" : "text-muted-foreground"}`}>{ev.event}</p>
-                      {ev.subItems && (
-                        <ul className="mt-1.5 space-y-0.5">
-                          {ev.subItems.map((sub, k) => (
-                            <li key={k} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                              <span className="gradient-text mt-0.5">•</span> {sub}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
+                {day.events.map((ev, j) => {
+                  const active = isActive(day.date, ev.time);
+                  const next = !active && isNext(day.date, ev.time);
+                  return (
+                    <motion.div
+                      key={j}
+                      ref={active ? activeRef : undefined}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: j * 0.03 }}
+                      className={`flex items-start gap-3 p-2.5 rounded-lg ${
+                        active ? "glass-card border-green-500/30 ring-1 ring-green-500/20" :
+                        next ? "glass-card border-primary/15" :
+                        ev.highlight ? "glass-card border-primary/20" : ""
+                      }`}
+                    >
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                        active ? "bg-green-500/20" : ev.highlight ? "gradient-primary" : "bg-muted"
+                      }`}>
+                        {active ? (
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                          </span>
+                        ) : (
+                          <ev.icon className="w-3.5 h-3.5 text-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          {ev.time && <p className="text-[10px] text-muted-foreground font-medium">{ev.time}</p>}
+                          {active && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded-full">NOW</span>
+                          )}
+                          {next && (
+                            <span className="text-[9px] font-medium uppercase tracking-wider text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded-full">Up next</span>
+                          )}
+                        </div>
+                        <p className={`text-sm ${active ? "font-semibold text-green-300 dark:text-green-300" : ev.highlight ? "font-semibold" : "text-muted-foreground"}`}>{ev.event}</p>
+                        {ev.subItems && (
+                          <ul className="mt-1.5 space-y-0.5">
+                            {ev.subItems.map((sub, k) => (
+                              <li key={k} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                <span className="gradient-text mt-0.5">&bull;</span> {sub}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </CollapsibleContent>
             </Collapsible>
           )}
@@ -181,7 +154,7 @@ const ScheduleTab = () => {
 
 const Event = () => {
   return (
-    <div className="px-5 pt-12 pb-6 max-w-lg mx-auto space-y-5">
+    <div className="px-5 pt-12 pb-6 max-w-lg md:max-w-3xl lg:max-w-4xl mx-auto space-y-5">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h1 className="text-2xl font-bold">Event</h1>
         <p className="text-sm text-muted-foreground mt-1">Everything you need, all in one place</p>
@@ -189,11 +162,11 @@ const Event = () => {
 
       <Tabs defaultValue="schedule" className="w-full">
         <TabsList className="w-full bg-muted/50 rounded-xl p-1 h-auto flex-wrap gap-0.5">
-          <TabsTrigger value="schedule" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">📅 Schedule</TabsTrigger>
-          <TabsTrigger value="jury" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">🧑‍⚖️ Jury</TabsTrigger>
-          <TabsTrigger value="rules" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">📋 Rules</TabsTrigger>
-          <TabsTrigger value="venue" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">🏠 Venue</TabsTrigger>
-          <TabsTrigger value="partners" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">🤝 Partners</TabsTrigger>
+          <TabsTrigger value="schedule" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Schedule</TabsTrigger>
+          <TabsTrigger value="jury" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Jury</TabsTrigger>
+          <TabsTrigger value="rules" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Rules</TabsTrigger>
+          <TabsTrigger value="venue" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Venue</TabsTrigger>
+          <TabsTrigger value="partners" className="rounded-lg text-xs flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Partners</TabsTrigger>
         </TabsList>
 
         {/* Schedule */}
@@ -261,11 +234,11 @@ const Event = () => {
               "Submission deadline: Sunday March 1, 5:00 PM",
               "Must use at least one partner API (Speechmatics, OpenAI, Backboard)",
               "All code must be written during the hackathon",
-              "7 teams max per track — first come first served",
-              "Top 2 per track → 6 finalists → Winner announcement",
+              "7 teams max per track \u2014 first come first served",
+              "Top 2 per track \u2192 6 finalists \u2192 Winner announcement",
             ].map((rule, i) => (
               <div key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-                <span className="gradient-text font-bold mt-0.5">•</span>
+                <span className="gradient-text font-bold mt-0.5">&bull;</span>
                 <span>{rule}</span>
               </div>
             ))}
@@ -281,17 +254,17 @@ const Event = () => {
             </div>
             <p className="text-sm text-muted-foreground">18 rue la Condamine, 75017 Paris</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This is more than a hackathon — you'll be living together for 24 hours. Private offices for each team, rest areas with couches, and all meals provided.
+              This is more than a hackathon &mdash; you'll be living together for 24 hours. Private offices for each team, rest areas with couches, and all meals provided.
             </p>
           </div>
 
           <div className="space-y-2">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">We've Got You Covered</h3>
             {[
-              { emoji: "🍽️", text: "All meals: breakfast, lunch, dinner, snacks & drinks" },
-              { emoji: "🏢", text: "Private team offices with dedicated workspaces" },
-              { emoji: "🛋️", text: "Rest areas with couches for power naps" },
-              { emoji: "📶", text: "High-speed WiFi throughout the venue" },
+              { emoji: "\ud83c\udf7d\ufe0f", text: "All meals: breakfast, lunch, dinner, snacks & drinks" },
+              { emoji: "\ud83c\udfe2", text: "Private team offices with dedicated workspaces" },
+              { emoji: "\ud83d\udecb\ufe0f", text: "Rest areas with couches for power naps" },
+              { emoji: "\ud83d\udcf6", text: "High-speed WiFi throughout the venue" },
             ].map((item, i) => (
               <div key={i} className="glass-card p-3 flex items-center gap-3">
                 <span className="text-lg">{item.emoji}</span>
@@ -301,7 +274,7 @@ const Event = () => {
           </div>
 
           <div className="glass-card p-4 space-y-2" style={{ borderColor: "hsl(263 84% 58% / 0.2)" }}>
-            <h3 className="text-sm font-semibold">🎒 What to Bring</h3>
+            <h3 className="text-sm font-semibold">\ud83c\udf92 What to Bring</h3>
             <div className="flex flex-wrap gap-2">
               {["Laptop + charger", "Mattress/blanket/pillow", "Headphones", "Water bottle", "Comfortable clothes", "ID"].map((item) => (
                 <Badge key={item} variant="glass" className="text-xs">{item}</Badge>
@@ -332,17 +305,17 @@ const Event = () => {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">🏆 Prizes</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">\ud83c\udfc6 Prizes</h3>
             <div className="glass-card p-5 space-y-4" style={{ background: "linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(59, 130, 246, 0.08))" }}>
               <div className="text-center">
-                <p className="gradient-text text-3xl font-extrabold">€100,000+</p>
+                <p className="gradient-text text-3xl font-extrabold">\u20ac100,000+</p>
                 <p className="text-xs text-muted-foreground mt-1">Total prize pool in cash + credits</p>
               </div>
               <div className="space-y-3">
                 {[
-                  { label: "Per track winner (×3)", prize: "€1,000 cash + partner credits" },
+                  { label: "Per track winner (\u00d73)", prize: "\u20ac1,000 cash + partner credits" },
                   { label: "Speechmatics Special", prize: "$3,000 additional credits" },
-                  { label: "Backboard Special", prize: "€300 cash prize" },
+                  { label: "Backboard Special", prize: "\u20ac300 cash prize" },
                   { label: "All winners", prize: "1yr ChatGPT Pro + 1mo Station F" },
                 ].map((p, i) => (
                   <div key={i} className="flex justify-between items-center text-sm">

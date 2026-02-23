@@ -4,6 +4,7 @@ import { Camera, Check, ChevronRight, Trophy, Users, Rocket } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { computeBadges, type EarnedBadge } from "@/lib/badges";
 
 const PROFILE_STEPS = [
   { label: "Upload photo", field: "avatar_url" },
@@ -22,21 +23,10 @@ const isFieldFilled = (profile: any, field: string) => {
   return !!val && String(val).trim() !== "";
 };
 
-const earnedBadges = [
-  { icon: "🌅", name: "Early Bird", desc: "Among first 20 to register", date: "Feb 15" },
-];
-
-const lockedBadges = [
-  { icon: "✅", name: "Crew Ready" },
-  { icon: "🤝", name: "Team Player" },
-  { icon: "💡", name: "Idea Machine" },
-  { icon: "🧊", name: "Icebreaker" },
-  { icon: "🚀", name: "Shipped It" },
-];
-
 const Profile = () => {
   const [activeTab, setActiveTab] = useState<"profile" | "badges" | "team">("profile");
   const [profile, setProfile] = useState<any>(null);
+  const [badges, setBadges] = useState<EarnedBadge[]>([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -44,6 +34,8 @@ const Profile = () => {
       if (!user) return;
       const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
       if (data) setProfile(data);
+      const earned = await computeBadges(user.id);
+      setBadges(earned);
     };
     fetchProfile();
   }, []);
@@ -70,7 +62,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="px-5 pt-12 pb-6 max-w-lg mx-auto space-y-6">
+    <div className="px-5 pt-12 pb-6 max-w-lg md:max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -171,30 +163,36 @@ const Profile = () => {
       {/* Badges */}
       {activeTab === "badges" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Earned</h3>
-            {earnedBadges.map((b, i) => (
-              <div key={i} className="glass-card p-4 flex items-center gap-3 glow-ring" style={{ boxShadow: "0 0 15px hsl(263 84% 58% / 0.15)" }}>
-                <span className="text-2xl">{b.icon}</span>
-                <div className="flex-1">
-                  <h4 className="text-sm font-semibold">{b.name}</h4>
-                  <p className="text-xs text-muted-foreground">{b.desc}</p>
-                </div>
-                <span className="text-[10px] text-muted-foreground">{b.date}</span>
-              </div>
-            ))}
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Locked</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {lockedBadges.map((b, i) => (
-                <div key={i} className="glass-card p-3 flex flex-col items-center gap-1.5 opacity-30">
-                  <span className="text-xl">{b.icon}</span>
-                  <span className="text-[10px] text-center text-muted-foreground">{b.name}</span>
+          {badges.filter((b) => b.earned).length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Earned</h3>
+              {badges.filter((b) => b.earned).map((b) => (
+                <div key={b.id} className="glass-card p-4 flex items-center gap-3 glow-ring" style={{ boxShadow: "0 0 15px hsl(263 84% 58% / 0.15)" }}>
+                  <span className="text-2xl">{b.icon}</span>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold">{b.name}</h4>
+                    <p className="text-xs text-muted-foreground">{b.desc}</p>
+                  </div>
+                  {b.earnedDate && <span className="text-[10px] text-muted-foreground">{b.earnedDate}</span>}
+                  <span className="text-[10px] text-primary font-medium">+{b.points} pts</span>
                 </div>
               ))}
             </div>
-          </div>
+          )}
+          {badges.filter((b) => !b.earned).length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Locked</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {badges.filter((b) => !b.earned).map((b) => (
+                  <div key={b.id} className="glass-card p-3 flex flex-col items-center gap-1.5 opacity-30">
+                    <span className="text-xl">{b.icon}</span>
+                    <span className="text-[10px] text-center text-muted-foreground">{b.name}</span>
+                    <span className="text-[9px] text-muted-foreground/50">{b.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 

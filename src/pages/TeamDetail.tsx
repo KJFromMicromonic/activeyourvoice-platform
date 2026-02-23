@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import MeshBackground from "@/components/MeshBackground";
+import { postActivity } from "@/lib/activity";
 
 interface TeamData {
   id: string;
@@ -134,6 +135,9 @@ const TeamDetail = () => {
       }
       const { data: newProfile } = await supabase.from("profiles").select("first_name, last_name, avatar_url, skills, bio").eq("user_id", userId).single();
       setMembers((prev) => [...prev, { user_id: userId, role: "member", profile: newProfile || undefined }]);
+      if (newProfile && team) {
+        await postActivity("member_joined", `${newProfile.first_name} ${newProfile.last_name}`, `joined team "${team.name}"`);
+      }
       toast.success("Member accepted!");
     } else {
       toast.success("Application declined");
@@ -162,7 +166,7 @@ const TeamDetail = () => {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <MeshBackground />
-      <div className="relative z-10 px-5 pt-8 pb-28 max-w-lg mx-auto space-y-6">
+      <div className="relative z-10 px-5 pt-8 pb-28 md:pb-12 max-w-lg md:max-w-2xl mx-auto space-y-6">
         {/* Back */}
         <button onClick={() => navigate("/teams")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="w-4 h-4" /> Back to Teams

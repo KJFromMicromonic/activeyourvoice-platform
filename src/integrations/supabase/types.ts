@@ -27,6 +27,8 @@ export type Database = {
           feedback: string | null
           first_name: string
           id: string
+          is_judge: boolean
+          is_organizer: boolean
           languages: string[] | null
           last_name: string
           linkedin: string | null
@@ -53,6 +55,8 @@ export type Database = {
           feedback?: string | null
           first_name?: string
           id?: string
+          is_judge?: boolean
+          is_organizer?: boolean
           languages?: string[] | null
           last_name?: string
           linkedin?: string | null
@@ -79,6 +83,8 @@ export type Database = {
           feedback?: string | null
           first_name?: string
           id?: string
+          is_judge?: boolean
+          is_organizer?: boolean
           languages?: string[] | null
           last_name?: string
           linkedin?: string | null
@@ -195,6 +201,205 @@ export type Database = {
           skills_needed?: string[]
           track?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          id: string
+          team_id: string
+          title: string
+          tagline: string
+          description: string | null
+          demo_url: string | null
+          repo_url: string | null
+          track: string
+          tech_stack: string[]
+          submitted_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          team_id: string
+          title: string
+          tagline: string
+          description?: string | null
+          demo_url?: string | null
+          repo_url?: string | null
+          track: string
+          tech_stack?: string[]
+          submitted_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          team_id?: string
+          title?: string
+          tagline?: string
+          description?: string | null
+          demo_url?: string | null
+          repo_url?: string | null
+          track?: string
+          tech_stack?: string[]
+          submitted_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_feed: {
+        Row: {
+          id: string
+          type: string
+          actor_name: string
+          detail: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          actor_name: string
+          detail?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          type?: string
+          actor_name?: string
+          detail?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      judge_scores: {
+        Row: {
+          id: string
+          judge_id: string
+          project_id: string
+          voice_naturalness: number | null
+          voice_turn_taking: number | null
+          voice_persona: number | null
+          voice_multimodal: number | null
+          voice_accessibility: number | null
+          tech_stability: number | null
+          tech_architecture: number | null
+          tech_actions: number | null
+          tech_complexity: number | null
+          tech_autonomy: number | null
+          memory_short_term: number | null
+          memory_long_term: number | null
+          memory_adaptivity: number | null
+          memory_improvement: number | null
+          impact_problem_clarity: number | null
+          impact_feasibility: number | null
+          track_criterion_1: number | null
+          track_criterion_2: number | null
+          presentation_clarity: number | null
+          presentation_qa: number | null
+          notes_strengths: string | null
+          notes_improvements: string | null
+          notes_overall: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          judge_id: string
+          project_id: string
+          voice_naturalness?: number | null
+          voice_turn_taking?: number | null
+          voice_persona?: number | null
+          voice_multimodal?: number | null
+          voice_accessibility?: number | null
+          tech_stability?: number | null
+          tech_architecture?: number | null
+          tech_actions?: number | null
+          tech_complexity?: number | null
+          tech_autonomy?: number | null
+          memory_short_term?: number | null
+          memory_long_term?: number | null
+          memory_adaptivity?: number | null
+          memory_improvement?: number | null
+          impact_problem_clarity?: number | null
+          impact_feasibility?: number | null
+          track_criterion_1?: number | null
+          track_criterion_2?: number | null
+          presentation_clarity?: number | null
+          presentation_qa?: number | null
+          notes_strengths?: string | null
+          notes_improvements?: string | null
+          notes_overall?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          judge_id?: string
+          project_id?: string
+          voice_naturalness?: number | null
+          voice_turn_taking?: number | null
+          voice_persona?: number | null
+          voice_multimodal?: number | null
+          voice_accessibility?: number | null
+          tech_stability?: number | null
+          tech_architecture?: number | null
+          tech_actions?: number | null
+          tech_complexity?: number | null
+          tech_autonomy?: number | null
+          memory_short_term?: number | null
+          memory_long_term?: number | null
+          memory_adaptivity?: number | null
+          memory_improvement?: number | null
+          impact_problem_clarity?: number | null
+          impact_feasibility?: number | null
+          track_criterion_1?: number | null
+          track_criterion_2?: number | null
+          presentation_clarity?: number | null
+          presentation_qa?: number | null
+          notes_strengths?: string | null
+          notes_improvements?: string | null
+          notes_overall?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "judge_scores_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          id: string
+          title: string
+          body: string
+          pinned: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          body: string
+          pinned?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          body?: string
+          pinned?: boolean
+          created_at?: string
         }
         Relationships: []
       }

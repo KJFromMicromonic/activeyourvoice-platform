@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Users } from "lucide-react";
+import { Search, Users, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const SKILLS = ["All", "Developer", "Designer", "Product", "AI/ML", "Data", "Business"];
 
 interface PersonProfile {
   id: string;
+  user_id: string;
   first_name: string;
   last_name: string;
   bio: string | null;
   skills: string[] | null;
+  looking_for: string[] | null;
   company: string | null;
   avatar_url: string | null;
   team_status: string | null;
@@ -23,21 +28,41 @@ const getInitials = (first: string, last: string) => {
 };
 
 const People = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeSkill, setActiveSkill] = useState("All");
   const [people, setPeople] = useState<PersonProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<PersonProfile | null>(null);
+  const [isTeamLeader, setIsTeamLeader] = useState(false);
 
   useEffect(() => {
-    const fetchPeople = async () => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { data } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, bio, skills, company, avatar_url, team_status, onboarding_completed")
+        .select("id, user_id, first_name, last_name, bio, skills, looking_for, company, avatar_url, team_status, onboarding_completed")
         .eq("onboarding_completed", true);
       if (data) setPeople(data);
+
+      if (user && data) {
+        const me = data.find((p) => p.user_id === user.id);
+        if (me) setCurrentUser(me);
+
+        // Check if team leader
+        const { data: membership } = await supabase
+          .from("team_members")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "leader")
+          .limit(1);
+        if (membership && membership.length > 0) setIsTeamLeader(true);
+      }
+
       setLoading(false);
     };
-    fetchPeople();
+    fetchData();
   }, []);
 
   const filtered = people.filter((p) => {
@@ -49,8 +74,48 @@ const People = () => {
 
   const lookingForTeam = (status: string | null) => !status || status === "No" || status === "Not yet";
 
+  // Matching algorithm
+  const getMatches = () => {
+    if (!currentUser?.looking_for || currentUser.looking_for.length === 0) return null;
+
+    const candidates = people.filter(
+      (p) => p.user_id !== currentUser.user_id && lookingForTeam(p.team_status) && p.skills && p.skills.length > 0
+    );
+
+    const scored = candidates.map((person) => {
+      let score = 0;
+      for (const need of currentUser.looking_for!) {
+        const needLower = need.toLowerCase();
+        for (const skill of person.skills!) {
+          if (skill.toLowerCase().includes(needLower) || needLower.includes(skill.toLowerCase())) {
+            score++;
+            break;
+          }
+        }
+      }
+      return { person, score };
+    });
+
+    return scored
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map((s) => ({ ...s.person, matchedSkills: getMatchedSkills(s.person) }));
+  };
+
+  const getMatchedSkills = (person: PersonProfile) => {
+    if (!currentUser?.looking_for || !person.skills) return [];
+    return person.skills.filter((skill) =>
+      currentUser.looking_for!.some(
+        (need) => skill.toLowerCase().includes(need.toLowerCase()) || need.toLowerCase().includes(skill.toLowerCase())
+      )
+    );
+  };
+
+  const matches = getMatches();
+
   return (
-    <div className="px-5 pt-12 pb-6 max-w-lg mx-auto space-y-5">
+    <div className="px-5 pt-12 pb-6 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-5">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-2xl font-bold">People</h1>
@@ -61,6 +126,64 @@ const People = () => {
         </div>
         <p className="text-sm text-muted-foreground">Find your crew for the hackathon</p>
       </motion.div>
+
+      {/* Matches for You */}
+      {currentUser && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Matches for You</h2>
+          </div>
+          {!currentUser.looking_for || currentUser.looking_for.length === 0 ? (
+            <div className="glass-card p-4 text-center">
+              <p className="text-xs text-muted-foreground">Complete your profile's "Looking for" section to see matches</p>
+              <Button variant="glass" size="sm" className="mt-2 rounded-xl text-xs" onClick={() => navigate("/profile")}>
+                Update Profile
+              </Button>
+            </div>
+          ) : matches && matches.length > 0 ? (
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+              {matches.map((person) => (
+                <div
+                  key={person.id}
+                  className="glass-card-hover p-3 min-w-[160px] flex flex-col items-center text-center gap-2 shrink-0"
+                >
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold gradient-primary glow-avatar overflow-hidden">
+                    {person.avatar_url ? (
+                      <img src={person.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(person.first_name, person.last_name)
+                    )}
+                  </div>
+                  <p className="text-sm font-semibold leading-tight">{person.first_name} {person.last_name}</p>
+                  <div className="flex flex-wrap justify-center gap-1">
+                    {person.matchedSkills.map((s) => (
+                      <Badge key={s} variant="skill" className="text-[9px] px-1.5 py-0 border-primary/30">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                  <Badge variant="glass" className="text-[9px] px-2 py-0.5">Looking for team</Badge>
+                  {isTeamLeader && (
+                    <Button
+                      variant="gradient"
+                      size="sm"
+                      className="w-full rounded-xl text-[10px] h-7 mt-auto"
+                      onClick={() => toast.success(`Invite sent to ${person.first_name}!`)}
+                    >
+                      Invite to team
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="glass-card p-4 text-center">
+              <p className="text-xs text-muted-foreground">No matches yet &mdash; more people are joining soon!</p>
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* Search */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="relative">
@@ -91,7 +214,7 @@ const People = () => {
       {loading ? (
         <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {filtered.map((person, i) => (
             <motion.div
               key={person.id}
@@ -121,7 +244,7 @@ const People = () => {
               </div>
               {lookingForTeam(person.team_status) && (
                 <Badge variant="glass" className="text-[10px] px-2 py-0.5 mt-auto">
-                  🔍 Looking for team
+                  Looking for team
                 </Badge>
               )}
             </motion.div>

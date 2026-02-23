@@ -9,6 +9,7 @@ import { Search, Users, ChevronLeft, ChevronRight, Check, Minus, Plus, Mic, Mess
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { postActivity } from "@/lib/activity";
 
 const SKILLS = ["Frontend", "Backend", "Full-stack", "AI/ML", "Design", "Product", "Data Science", "DevOps", "Business/Strategy", "Voice/NLP", "Other"];
 
@@ -177,6 +178,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
       setCreatedTeamId(team.id);
       goNext(); // Go to confirmation step (4)
       setTimeout(() => setShowPoints(true), 500);
+      await postActivity("team_created", teamName.trim(), `created team "${teamName.trim()}"`);
       onTeamCreated?.();
     } catch (err) {
       console.error(err);

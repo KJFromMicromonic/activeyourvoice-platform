@@ -4,6 +4,53 @@
 
 @layer base {
   :root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 263 84% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 5% 92%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 270 60% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 85%;
+    --input: 240 6% 85%;
+    --ring: 263 84% 58%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 96%;
+    --sidebar-foreground: 240 10% 10%;
+    --sidebar-primary: 263 84% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 92%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 6% 85%;
+    --sidebar-ring: 263 84% 58%;
+
+    --glass-bg: 0, 0, 0;
+    --glass-bg-opacity: 0.04;
+    --glass-border-opacity: 0.08;
+    --glass-hover-bg-opacity: 0.07;
+    --glass-hover-border-opacity: 0.15;
+  }
+
+  .dark {
     --background: 240 25% 3%;
     --foreground: 220 14% 91%;
 
@@ -32,8 +79,6 @@
     --input: 240 10% 18%;
     --ring: 263 84% 58%;
 
-    --radius: 1rem;
-
     --sidebar-background: 240 15% 5%;
     --sidebar-foreground: 220 14% 91%;
     --sidebar-primary: 263 84% 58%;
@@ -42,6 +87,12 @@
     --sidebar-accent-foreground: 220 14% 91%;
     --sidebar-border: 240 10% 15%;
     --sidebar-ring: 263 84% 58%;
+
+    --glass-bg: 255, 255, 255;
+    --glass-bg-opacity: 0.03;
+    --glass-border-opacity: 0.08;
+    --glass-hover-bg-opacity: 0.06;
+    --glass-hover-border-opacity: 0.15;
   }
 
   * {
@@ -56,25 +107,25 @@
 
 @layer components {
   .glass-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--glass-bg), var(--glass-bg-opacity));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--glass-bg), var(--glass-border-opacity));
     border-radius: 1rem;
   }
 
   .glass-card-hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(var(--glass-bg), var(--glass-bg-opacity));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(var(--glass-bg), var(--glass-border-opacity));
     border-radius: 1rem;
     transition: all 300ms ease;
   }
 
   .glass-card-hover:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(var(--glass-bg), var(--glass-hover-bg-opacity));
+    border-color: rgba(var(--glass-bg), var(--glass-hover-border-opacity));
     box-shadow: 0 0 30px hsl(263 84% 58% / 0.1), 0 0 60px hsl(217 91% 60% / 0.05);
   }
 
@@ -104,13 +155,13 @@
 
   .pill-button {
     @apply px-4 py-2 text-sm font-medium rounded-full transition-all duration-300;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--glass-bg), 0.05);
+    border: 1px solid rgba(var(--glass-bg), 0.1);
   }
 
   .pill-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(var(--glass-bg), 0.1);
+    border-color: rgba(var(--glass-bg), 0.2);
   }
 
   .pill-button-active {
@@ -162,10 +213,10 @@
   }
 
   .glass-input {
-    background: rgba(255, 255, 255, 0.06) !important;
+    background: rgba(var(--glass-bg), 0.06) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(var(--glass-bg), 0.12) !important;
     border-radius: 0.75rem !important;
     transition: all 300ms ease;
   }

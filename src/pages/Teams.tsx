@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import CreateTeamSheet from "@/components/CreateTeamSheet";
+import PostIdeaSheet from "@/components/PostIdeaSheet";
 
 const tracksMeta = [
   {
@@ -44,11 +45,6 @@ interface TeamRow {
   leader_id: string;
 }
 
-interface MemberCount {
-  team_id: string;
-  count: number;
-}
-
 const Teams = () => {
   const navigate = useNavigate();
   const [teams, setTeams] = useState<TeamRow[]>([]);
@@ -61,7 +57,6 @@ const Teams = () => {
     const { data: teamsData } = await supabase.from("teams").select("*");
     if (teamsData) {
       setTeams(teamsData as TeamRow[]);
-      // Fetch member counts
       const counts: Record<string, number> = {};
       const { data: members } = await supabase.from("team_members").select("team_id");
       if (members) {
@@ -69,7 +64,6 @@ const Teams = () => {
       }
       setMemberCounts(counts);
 
-      // Fetch leader profiles
       const leaderIds = [...new Set(teamsData.map((t: any) => t.leader_id))];
       const profiles: Record<string, any> = {};
       for (const lid of leaderIds) {
@@ -90,7 +84,7 @@ const Teams = () => {
     `${(first || "")[0] || ""}${(last || "")[0] || ""}`.toUpperCase() || "?";
 
   return (
-    <div className="px-5 pt-12 pb-28 max-w-lg mx-auto space-y-6">
+    <div className="px-5 pt-12 pb-28 md:pb-12 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h1 className="text-2xl font-bold">Teams & Tracks</h1>
         <p className="text-sm text-muted-foreground mt-1">Choose your track, find your crew, build the future</p>
@@ -98,12 +92,14 @@ const Teams = () => {
 
       {/* CTA */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="flex gap-3">
-        <Button variant="gradient" className="flex-1 rounded-xl">
-          <Lightbulb className="w-4 h-4" />
-          Post an Idea
-        </Button>
+        <PostIdeaSheet>
+          <Button variant="gradient" className="flex-1 rounded-xl">
+            <Lightbulb className="w-4 h-4" />
+            Post an Idea
+          </Button>
+        </PostIdeaSheet>
         <CreateTeamSheet onTeamCreated={fetchData}>
-          <Button variant="glass" className="flex-1 rounded-xl border border-white/10">
+          <Button variant="glass" className="flex-1 rounded-xl border border-border">
             <Users className="w-4 h-4" />
             Create Team
           </Button>
@@ -113,36 +109,38 @@ const Teams = () => {
       {/* Tracks */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tracks</h2>
-        {tracksMeta.map((track, i) => {
-          const count = trackCounts[track.id] || 0;
-          return (
-            <motion.div
-              key={track.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 + i * 0.08 }}
-              className="glass-card-hover p-5 space-y-3 cursor-pointer"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${track.color} flex items-center justify-center`}>
-                    <track.icon className="w-5 h-5 text-white" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {tracksMeta.map((track, i) => {
+            const count = trackCounts[track.id] || 0;
+            return (
+              <motion.div
+                key={track.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.15 + i * 0.08 }}
+                className="glass-card-hover p-5 space-y-3 cursor-pointer"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${track.color} flex items-center justify-center`}>
+                      <track.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm">{track.name}</h3>
+                      <p className="text-[11px] text-muted-foreground">{count}/{track.maxTeams} teams registered</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">{track.name}</h3>
-                    <p className="text-[11px] text-muted-foreground">{count}/{track.maxTeams} teams registered</p>
-                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{track.description}</p>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className="h-full gradient-bar transition-all duration-500" style={{ width: `${(count / track.maxTeams) * 100}%` }} />
-              </div>
-              <p className="text-[10px] text-primary font-medium">{track.maxTeams - count} spots left</p>
-            </motion.div>
-          );
-        })}
+                <p className="text-xs text-muted-foreground leading-relaxed">{track.description}</p>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full gradient-bar transition-all duration-500" style={{ width: `${(count / track.maxTeams) * 100}%` }} />
+                </div>
+                <p className="text-[10px] text-primary font-medium">{track.maxTeams - count} spots left</p>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Teams List */}
@@ -155,50 +153,52 @@ const Teams = () => {
             <p className="text-sm text-muted-foreground">No teams yet — be the first to create one!</p>
           </div>
         ) : (
-          teams.map((team, i) => {
-            const leader = leaderProfiles[team.leader_id];
-            const count = memberCounts[team.id] || 0;
-            return (
-              <motion.div
-                key={team.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
-                className="glass-card-hover p-4 space-y-3 cursor-pointer"
-                onClick={() => navigate(`/teams/${team.id}`)}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-sm">{team.name}</h3>
-                    <Badge variant="skill" className="text-[10px] mt-1">
-                      {team.track.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                    </Badge>
-                  </div>
-                  {leader && (
-                    <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-[10px] font-bold text-white overflow-hidden shrink-0">
-                      {leader.avatar_url ? (
-                        <img src={leader.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        getInitials(leader.first_name, leader.last_name)
-                      )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {teams.map((team, i) => {
+              const leader = leaderProfiles[team.leader_id];
+              const count = memberCounts[team.id] || 0;
+              return (
+                <motion.div
+                  key={team.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                  className="glass-card-hover p-4 space-y-3 cursor-pointer"
+                  onClick={() => navigate(`/teams/${team.id}`)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-sm">{team.name}</h3>
+                      <Badge variant="skill" className="text-[10px] mt-1">
+                        {team.track.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </Badge>
                     </div>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{team.description}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {team.skills_needed.slice(0, 3).map((s) => (
-                      <Badge key={s} variant="glass" className="text-[10px] px-2 py-0">{s}</Badge>
-                    ))}
+                    {leader && (
+                      <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-[10px] font-bold text-white overflow-hidden shrink-0">
+                        {leader.avatar_url ? (
+                          <img src={leader.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          getInitials(leader.first_name, leader.last_name)
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <span className="text-[11px] text-muted-foreground">{count}/{team.max_members} members</span>
-                </div>
-                <Button variant="glass" size="sm" className="w-full rounded-xl border border-white/10 text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/teams/${team.id}`); }}>
-                  View Team
-                </Button>
-              </motion.div>
-            );
-          })
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{team.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {team.skills_needed.slice(0, 3).map((s) => (
+                        <Badge key={s} variant="glass" className="text-[10px] px-2 py-0">{s}</Badge>
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">{count}/{team.max_members} members</span>
+                  </div>
+                  <Button variant="glass" size="sm" className="w-full rounded-xl border border-border text-xs" onClick={(e) => { e.stopPropagation(); navigate(`/teams/${team.id}`); }}>
+                    View Team
+                  </Button>
+                </motion.div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

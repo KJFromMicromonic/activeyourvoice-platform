@@ -16,6 +16,9 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
+import Organizer from "./pages/Organizer";
+import Projects from "./pages/Projects";
+import Judge from "./pages/Judge";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +70,26 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const RoleGuard = ({ role, children }: { role: "is_organizer" | "is_judge"; children: React.ReactNode }) => {
+  const [allowed, setAllowed] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    const check = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setAllowed(false); return; }
+      const { data } = await supabase.from("profiles").select(role).eq("user_id", user.id).single();
+      setAllowed(data?.[role] === true);
+    };
+    check();
+  }, [role]);
+
+  if (allowed === undefined) {
+    return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Loading...</p></div>;
+  }
+  if (!allowed) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -82,7 +105,10 @@ const App = () => (
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/:teamId" element={<TeamDetail />} />
             <Route path="/event" element={<Event />} />
+            <Route path="/projects" element={<Projects />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/organizer" element={<RoleGuard role="is_organizer"><Organizer /></RoleGuard>} />
+            <Route path="/judge" element={<RoleGuard role="is_judge"><Judge /></RoleGuard>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Users, Rocket, Calendar, Send, Pin, Trophy, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Users, Rocket, Calendar, Send, Pin, Trophy, Clock, MessageSquare, FolderOpen, UserPlus, Megaphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
 import MeshBackground from "@/components/MeshBackground";
 import Waveform from "@/components/Waveform";
+import { findCurrentEvent, findNextEvent } from "@/lib/schedule-utils";
+import { computeBadges, type EarnedBadge } from "@/lib/badges";
 
 const TARGET_DATE = new Date("2026-02-28T15:00:00+01:00");
+const AURA_URL = "https://concierge.activateyourvoice.tech";
 
 const titleStyle: React.CSSProperties = {
   fontFamily: "'Playfair Display', serif",
@@ -53,47 +57,47 @@ const calcCompletion = (profile: any) => {
   return Math.round(filled / total * 100);
 };
 
-const quickActions = [
+const quickActions: { icon: React.ElementType; label: string; to?: string; href?: string }[] = [
+{ icon: MessageSquare, label: "Talk to AURA", href: AURA_URL },
 { icon: Users, label: "Find a team", to: "/teams" },
 { icon: Rocket, label: "Browse people", to: "/people" },
 { icon: Calendar, label: "View schedule", to: "/event" },
-{ icon: Send, label: "Submit project", to: "/teams" }];
+{ icon: Send, label: "Submit project", to: "/projects" }];
 
-
-const announcements = [
-{ id: 1, title: "Welcome to Activate Your Voice! 🎙️", body: "We're thrilled to have 100 builders joining us for 24 hours of creation. Get your profile ready!", pinned: true, time: "2h ago" },
-{ id: 2, title: "Team registration opens Thursday", body: "Form your team of 3-6 and register before Feb 26. First come, first served — 7 teams max per track.", pinned: false, time: "5h ago" },
-{ id: 3, title: "OpenAI GPT-5.3-Codex access confirmed", body: "All participants get free GPT-5.3-Codex access during the event. Details in Event tab.", pinned: false, time: "1d ago" }];
-
-
-const badges = [
-{ icon: "🌅", name: "Early Bird", earned: true },
-{ icon: "✅", name: "Crew Ready", earned: false },
-{ icon: "🤝", name: "Team Player", earned: false },
-{ icon: "💡", name: "Idea Machine", earned: false },
-{ icon: "🧊", name: "Icebreaker", earned: false },
-{ icon: "🚀", name: "Shipped It", earned: false }];
 
 
 const CountdownUnit = ({ value, label }: {value: number;label: string;}) =>
 <div className="flex flex-col items-center">
     <div
-    className="px-3 py-2 min-w-[56px] text-center rounded-xl"
-    style={{
-      background: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)"
-    }}>
-
-      <span className="text-3xl font-bold text-white">{String(value).padStart(2, "0")}</span>
+    className="px-3 py-2 min-w-[56px] text-center rounded-xl glass-card">
+      <span className="text-3xl font-bold">{String(value).padStart(2, "0")}</span>
     </div>
     <span className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider">{label}</span>
   </div>;
 
+const ACTIVITY_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
+  team_created: { icon: Rocket, color: "text-purple-400 bg-purple-500/10" },
+  member_joined: { icon: UserPlus, color: "text-green-400 bg-green-500/10" },
+  project_submitted: { icon: FolderOpen, color: "text-blue-400 bg-blue-500/10" },
+  announcement_posted: { icon: Megaphone, color: "text-amber-400 bg-amber-500/10" },
+};
+
+interface ActivityItem {
+  id: string;
+  type: string;
+  actor_name: string;
+  detail: string | null;
+  created_at: string;
+}
 
 const Index = () => {
   const countdown = useCountdown();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [now, setNow] = useState(new Date());
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [badges, setBadges] = useState<EarnedBadge[]>([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -101,24 +105,76 @@ const Index = () => {
       if (!user) return;
       const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
       if (data) setProfile(data);
+      const earned = await computeBadges(user.id);
+      setBadges(earned);
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const { data } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("pinned", { ascending: false })
+        .order("created_at", { ascending: false });
+      if (data) setAnnouncements(data);
+    };
+    fetchAnnouncements();
+  }, []);
+
+  // Schedule reminders timer
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Activity feed
+  useEffect(() => {
+    const fetchActivities = async () => {
+      const { data } = await supabase
+        .from("activity_feed")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (data) setActivities(data);
+    };
+    fetchActivities();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel("activity-feed-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "activity_feed" },
+        (payload) => {
+          setActivities((prev) => [payload.new as ActivityItem, ...prev].slice(0, 20));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const currentEvent = findCurrentEvent(now);
+  const nextEvent = !currentEvent ? findNextEvent(now) : null;
+  const showScheduleCard = currentEvent || (nextEvent && nextEvent.startsIn <= 2 * 60 * 60 * 1000);
 
   const profileCompletion = calcCompletion(profile);
   const displayName = profile?.first_name?.trim() || "Builder";
   const points = profile?.points ?? 0;
   const teamStatusText = profile?.team_status === "Yes" ?
   "In a team" :
-  "Solo — no team yet";
+  "Solo \u2014 no team yet";
   const isInTeam = profile?.team_status === "Yes";
-  const daysUntil = Math.max(0, Math.ceil((TARGET_DATE.getTime() - Date.now()) / 86400000));
   const earnedCount = badges.filter((b) => b.earned).length;
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <MeshBackground />
-      <div className="relative z-10 px-5 pt-12 pb-28 max-w-lg mx-auto space-y-8">
+      <div className="relative z-10 px-5 pt-12 pb-28 md:pb-12 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-8">
         {/* Welcome Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -129,32 +185,69 @@ const Index = () => {
           <div className="absolute -top-2 left-0 right-0 opacity-10">
             <Waveform subtle />
           </div>
-          <h1 className="text-2xl font-bold relative z-10">
-            Welcome back, <span className="text-3xl" style={titleStyle}>{displayName}</span> 👋
+          <h1 className="text-2xl md:text-3xl font-bold relative z-10">
+            Welcome back, <span className="text-3xl md:text-4xl" style={titleStyle}>{displayName}</span>
           </h1>
-          
-
-
         </motion.div>
 
-        {/* Countdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card p-5 glow-border">
+        {/* Countdown + Schedule card row on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Countdown */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="glass-card p-5 glow-border">
 
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
-          </div>
-          <div className="flex justify-center gap-3">
-            <CountdownUnit value={countdown.days} label="Days" />
-            <CountdownUnit value={countdown.hours} label="Hrs" />
-            <CountdownUnit value={countdown.minutes} label="Min" />
-            <CountdownUnit value={countdown.seconds} label="Sec" />
-          </div>
-        </motion.div>
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-4 h-4 text-primary" />
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
+            </div>
+            <div className="flex justify-center gap-3">
+              <CountdownUnit value={countdown.days} label="Days" />
+              <CountdownUnit value={countdown.hours} label="Hrs" />
+              <CountdownUnit value={countdown.minutes} label="Min" />
+              <CountdownUnit value={countdown.seconds} label="Sec" />
+            </div>
+          </motion.div>
+
+          {/* Happening Now / Coming Up */}
+          {showScheduleCard && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform flex items-center"
+              onClick={() => navigate("/event")}
+            >
+              {currentEvent ? (
+                <div className="flex items-center gap-3 w-full">
+                  <span className="relative flex h-3 w-3 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-green-400">Happening Now</p>
+                    <p className="text-sm font-medium truncate">{currentEvent.event.event}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                </div>
+              ) : nextEvent ? (
+                <div className="flex items-center gap-3 w-full">
+                  <Clock className="w-4 h-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Coming Up</p>
+                    <p className="text-sm font-medium truncate">{nextEvent.event.event}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      in {Math.round(nextEvent.startsIn / 60000)} minutes
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                </div>
+              ) : null}
+            </motion.div>
+          )}
+        </div>
 
         {/* Status Card */}
         <motion.div
@@ -178,7 +271,7 @@ const Index = () => {
                 transition={{ duration: 1, delay: 0.5, ease: "easeOut" }} />
 
             </div>
-            <p className="text-xs text-muted-foreground mt-2">You're {profileCompletion}% crew-ready! Complete your profile to stand out ✨</p>
+            <p className="text-xs text-muted-foreground mt-2">You're {profileCompletion}% crew-ready! Complete your profile to stand out</p>
           </div>
           <div className="flex gap-3 text-sm">
             <div className="flex items-center gap-2">
@@ -198,11 +291,11 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
-            {quickActions.map(({ icon: Icon, label, to }) =>
+          <div className="flex gap-2 overflow-x-auto md:flex-wrap pb-2 -mx-1 px-1 scrollbar-hide">
+            {quickActions.map(({ icon: Icon, label, to, href }) =>
             <button
               key={label}
-              onClick={() => navigate(to)}
+              onClick={() => href ? window.open(href, "_blank", "noopener") : navigate(to!)}
               className="pill-button flex items-center gap-2 whitespace-nowrap shrink-0 hover:border-primary/30 active:scale-95 transition-all">
 
                 <span className="w-6 h-6 rounded-full gradient-primary flex items-center justify-center shrink-0">
@@ -214,6 +307,8 @@ const Index = () => {
           </div>
         </motion.div>
 
+        {/* Announcements + Activity Feed — side by side on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Announcements */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -229,10 +324,54 @@ const Index = () => {
                 {a.pinned && <Pin className="w-3 h-3 text-primary shrink-0 mt-0.5" />}
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">{a.body}</p>
-              <span className="text-[10px] text-primary/40">{a.time}</span>
+              <span className="text-[10px] text-primary/40">
+                {a.created_at ? formatDistanceToNow(new Date(a.created_at), { addSuffix: true }) : ""}
+              </span>
             </div>
           )}
         </motion.div>
+
+        {/* Activity Feed */}
+        {activities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.42 }}
+            className="space-y-3">
+
+            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Live Activity</h2>
+            <AnimatePresence initial={false}>
+              {activities.slice(0, 10).map((a) => {
+                const config = ACTIVITY_ICONS[a.type] || ACTIVITY_ICONS.team_created;
+                const IconComp = config.icon;
+                return (
+                  <motion.div
+                    key={a.id}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="glass-card p-3 flex items-center gap-3"
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${config.color}`}>
+                      <IconComp className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm">
+                        <span className="font-semibold">{a.actor_name}</span>
+                        {a.detail && <span className="text-muted-foreground"> {a.detail}</span>}
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">
+                        {a.created_at ? formatDistanceToNow(new Date(a.created_at), { addSuffix: true }) : ""}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
+        )}
+        </div>
 
         {/* Badges */}
         <motion.div
@@ -241,7 +380,7 @@ const Index = () => {
           transition={{ duration: 0.5, delay: 0.45 }}>
 
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">
-            Your Achievements — <span className="text-primary">{earnedCount}/{badges.length}</span> earned
+            Your Achievements &mdash; <span className="text-primary">{earnedCount}/{badges.length}</span> earned
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
             {badges.map((b) =>
