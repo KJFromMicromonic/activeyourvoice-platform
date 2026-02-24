@@ -18,7 +18,7 @@ export interface TimelineDay {
 
 export const timelineDays: TimelineDay[] = [
   {
-    date: "Monday, Feb 23",
+    date: "Tuesday, Feb 24",
     label: "Track Announcement",
     emoji: "\u{1F4C5}",
     isMilestone: true,
@@ -29,7 +29,11 @@ export const timelineDays: TimelineDay[] = [
     label: "Partners Demo",
     emoji: "\u{1F4C5}",
     isMilestone: true,
-    events: [{ time: "", event: "Partners demo", icon: Handshake }],
+    events: [
+      { time: "6:30 PM CET", event: "Speechmatics demo \ud83c\udfa4", icon: Handshake },
+      { time: "7:00 PM CET", event: "Backboard demo \ud83d\udcbb", icon: Handshake },
+      { time: "7:20 PM \u2013 7:30 PM CET", event: "Wrap up", icon: Clock },
+    ],
   },
   {
     date: "Thursday, Feb 26",

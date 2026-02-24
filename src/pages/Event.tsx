@@ -75,9 +75,12 @@ const ScheduleTab = () => {
             <div className="glass-card p-3 space-y-2">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{day.emoji} {day.date}</h4>
               {day.events.map((ev, j) => (
-                <div key={j} className={`flex items-center gap-2 text-sm ${ev.highlight ? "text-primary font-semibold" : "text-muted-foreground"}`}>
-                  <ev.icon className="w-4 h-4 shrink-0" />
-                  <span>{ev.event}</span>
+                <div key={j} className={`flex items-start gap-2 text-sm ${ev.highlight ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                  <ev.icon className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    {ev.time && <p className="text-[10px] font-medium text-muted-foreground/70 mb-0.5">{ev.time}</p>}
+                    <span>{ev.event}</span>
+                  </div>
                 </div>
               ))}
             </div>
