@@ -89,7 +89,7 @@ const Teams = () => {
     <div className="px-5 pt-12 pb-28 md:pb-12 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h1 className="text-2xl font-bold">Teams & Tracks</h1>
-        <p className="text-sm text-muted-foreground mt-1">Choose your track, find your crew, build the future</p>
+        <p className="text-sm text-muted-foreground mt-1">Choose your track, find your crew, build the future of Voice Agents</p>
       </motion.div>
 
       {/* CTA */}
