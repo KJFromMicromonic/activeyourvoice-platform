@@ -41,7 +41,7 @@ export const timelineDays: TimelineDay[] = [
     emoji: "\u{1F4C5}",
     isMilestone: true,
     events: [
-      { time: "", event: "Deadline: Team submission & perks redeem", icon: AlertTriangle, highlight: true },
+      { time: "", event: "Deadline: Team submission", icon: AlertTriangle, highlight: true },
       { time: "", event: "Codex Access \u2014 organisation ID distributed", icon: Laptop },
     ],
   },
