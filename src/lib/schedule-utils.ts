@@ -29,7 +29,7 @@ export const timelineDays: TimelineDay[] = [
     label: "Partners Demo",
     emoji: "\u{1F4C5}",
     isMilestone: true,
-    events: [{ time: "", event: "Partners demo + DoraHack team submission", icon: Handshake }],
+    events: [{ time: "", event: "Partners demo", icon: Handshake }],
   },
   {
     date: "Thursday, Feb 26",
