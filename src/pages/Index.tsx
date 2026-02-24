@@ -67,12 +67,11 @@ const quickActions: { icon: React.ElementType; label: string; to?: string; href?
 
 
 const CountdownUnit = ({ value, label }: {value: number;label: string;}) =>
-<div className="flex flex-col items-center">
-    <div
-    className="px-3 py-2 min-w-[56px] text-center rounded-xl glass-card">
-      <span className="text-3xl font-bold">{String(value).padStart(2, "0")}</span>
+<div className="flex flex-col items-center flex-1">
+    <div className="px-3 py-2 md:py-4 w-full text-center rounded-xl glass-card">
+      <span className="text-3xl md:text-5xl lg:text-7xl font-bold tabular-nums">{String(value).padStart(2, "0")}</span>
     </div>
-    <span className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider">{label}</span>
+    <span className="text-[10px] md:text-xs text-muted-foreground mt-1.5 uppercase tracking-wider">{label}</span>
   </div>;
 
 const ACTIVITY_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
@@ -190,64 +189,61 @@ const Index = () => {
           </h1>
         </motion.div>
 
-        {/* Countdown + Schedule card row on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Countdown */}
+        {/* Countdown — always full width */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="glass-card p-5 md:p-8 glow-border">
+
+          <div className="flex items-center gap-2 mb-4 md:mb-6">
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
+          </div>
+          <div className="flex gap-3 md:gap-5">
+            <CountdownUnit value={countdown.days} label="Days" />
+            <CountdownUnit value={countdown.hours} label="Hrs" />
+            <CountdownUnit value={countdown.minutes} label="Min" />
+            <CountdownUnit value={countdown.seconds} label="Sec" />
+          </div>
+        </motion.div>
+
+        {/* Happening Now / Coming Up */}
+        {showScheduleCard && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="glass-card p-5 glow-border">
-
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
-            </div>
-            <div className="flex justify-center gap-3">
-              <CountdownUnit value={countdown.days} label="Days" />
-              <CountdownUnit value={countdown.hours} label="Hrs" />
-              <CountdownUnit value={countdown.minutes} label="Min" />
-              <CountdownUnit value={countdown.seconds} label="Sec" />
-            </div>
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform flex items-center"
+            onClick={() => navigate("/event")}
+          >
+            {currentEvent ? (
+              <div className="flex items-center gap-3 w-full">
+                <span className="relative flex h-3 w-3 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-green-400">Happening Now</p>
+                  <p className="text-sm font-medium truncate">{currentEvent.event.event}</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </div>
+            ) : nextEvent ? (
+              <div className="flex items-center gap-3 w-full">
+                <Clock className="w-4 h-4 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">Coming Up</p>
+                  <p className="text-sm font-medium truncate">{nextEvent.event.event}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    in {Math.round(nextEvent.startsIn / 60000)} minutes
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </div>
+            ) : null}
           </motion.div>
-
-          {/* Happening Now / Coming Up */}
-          {showScheduleCard && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform flex items-center"
-              onClick={() => navigate("/event")}
-            >
-              {currentEvent ? (
-                <div className="flex items-center gap-3 w-full">
-                  <span className="relative flex h-3 w-3 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-green-400">Happening Now</p>
-                    <p className="text-sm font-medium truncate">{currentEvent.event.event}</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                </div>
-              ) : nextEvent ? (
-                <div className="flex items-center gap-3 w-full">
-                  <Clock className="w-4 h-4 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Coming Up</p>
-                    <p className="text-sm font-medium truncate">{nextEvent.event.event}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      in {Math.round(nextEvent.startsIn / 60000)} minutes
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                </div>
-              ) : null}
-            </motion.div>
-          )}
-        </div>
+        )}
 
         {/* Status Card */}
         <motion.div
@@ -383,16 +379,33 @@ const Index = () => {
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">
             Your Achievements &mdash; <span className="text-primary">{earnedCount}/{badges.length}</span> earned
           </h2>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+
+          {/* Mobile: horizontal scroll; Desktop: full-width grid */}
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 md:hidden">
             {badges.map((b) =>
             <div
               key={b.name}
               className={`glass-card flex flex-col items-center gap-1.5 p-3 min-w-[72px] shrink-0 relative ${
               b.earned ? "glow-ring" : ""}`
               }>
-
                 <span className={`text-xl ${b.earned ? "" : "opacity-40 blur-[1px]"}`}>{b.icon}</span>
                 <span className={`text-[10px] text-center leading-tight ${b.earned ? "text-foreground" : "text-muted-foreground/50"}`}>{b.name}</span>
+                {!b.earned &&
+              <div className="absolute inset-0 rounded-2xl backdrop-blur-[1px] bg-background/30" />
+              }
+              </div>
+            )}
+          </div>
+
+          <div className="hidden md:grid grid-cols-6 gap-4">
+            {badges.map((b) =>
+            <div
+              key={b.name}
+              className={`glass-card flex flex-col items-center gap-2 p-5 relative ${
+              b.earned ? "glow-ring" : ""}`
+              }>
+                <span className={`text-4xl ${b.earned ? "" : "opacity-40 blur-[1px]"}`}>{b.icon}</span>
+                <span className={`text-xs text-center leading-snug font-medium ${b.earned ? "text-foreground" : "text-muted-foreground/50"}`}>{b.name}</span>
                 {!b.earned &&
               <div className="absolute inset-0 rounded-2xl backdrop-blur-[1px] bg-background/30" />
               }

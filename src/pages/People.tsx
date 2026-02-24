@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Users, Sparkles } from "lucide-react";
+import { Search, Users, Sparkles, Linkedin, Briefcase, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -18,6 +19,8 @@ interface PersonProfile {
   skills: string[] | null;
   looking_for: string[] | null;
   company: string | null;
+  role: string | null;
+  linkedin: string | null;
   avatar_url: string | null;
   team_status: string | null;
   onboarding_completed: boolean;
@@ -35,6 +38,7 @@ const People = () => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<PersonProfile | null>(null);
   const [isTeamLeader, setIsTeamLeader] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<PersonProfile | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,7 +46,7 @@ const People = () => {
 
       const { data } = await supabase
         .from("profiles")
-        .select("id, user_id, first_name, last_name, bio, skills, looking_for, company, avatar_url, team_status, onboarding_completed")
+        .select("id, user_id, first_name, last_name, bio, skills, looking_for, company, role, linkedin, avatar_url, team_status, onboarding_completed")
         .eq("onboarding_completed", true);
       if (data) setPeople(data);
 
@@ -222,6 +226,7 @@ const People = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.15 + i * 0.05 }}
               className="glass-card-hover p-4 flex flex-col items-center text-center gap-2 cursor-pointer"
+              onClick={() => setSelectedPerson(person)}
             >
               <div className="w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold gradient-primary glow-avatar overflow-hidden">
                 {person.avatar_url ? (
@@ -251,6 +256,98 @@ const People = () => {
           ))}
         </div>
       )}
+
+      {/* Profile Drawer */}
+      <Sheet open={!!selectedPerson} onOpenChange={(open) => { if (!open) setSelectedPerson(null); }}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85dvh] overflow-y-auto border-border bg-background/95 backdrop-blur-xl px-0 pb-10">
+          {selectedPerson && (
+            <div className="px-6 pt-2 space-y-5">
+              {/* Header */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-base font-bold gradient-primary glow-avatar overflow-hidden shrink-0">
+                  {selectedPerson.avatar_url ? (
+                    <img src={selectedPerson.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    getInitials(selectedPerson.first_name, selectedPerson.last_name)
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-bold leading-tight">
+                    {selectedPerson.first_name} {selectedPerson.last_name}
+                  </h2>
+                  {(selectedPerson.role || selectedPerson.company) && (
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                      {selectedPerson.role && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Briefcase className="w-3 h-3" />
+                          {selectedPerson.role}
+                        </span>
+                      )}
+                      {selectedPerson.company && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Building2 className="w-3 h-3" />
+                          {selectedPerson.company}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {lookingForTeam(selectedPerson.team_status) && (
+                    <Badge variant="glass" className="text-[10px] px-2 py-0.5 mt-1">Looking for team</Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Bio */}
+              {selectedPerson.bio && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-1.5">About</p>
+                  <p className="text-sm text-foreground/90 leading-relaxed">{selectedPerson.bio}</p>
+                </div>
+              )}
+
+              {/* Skills */}
+              {(selectedPerson.skills || []).length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(selectedPerson.skills || []).map((s) => (
+                      <Badge key={s} variant="skill" className="text-xs px-2.5 py-0.5">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Looking For */}
+              {(selectedPerson.looking_for || []).length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-2">Looking For</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(selectedPerson.looking_for || []).map((s) => (
+                      <Badge key={s} variant="glass" className="text-xs px-2.5 py-0.5">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* LinkedIn CTA */}
+              {selectedPerson.linkedin && (
+                <Button
+                  variant="gradient"
+                  className="w-full rounded-xl gap-2"
+                  onClick={() => window.open(selectedPerson.linkedin!, "_blank", "noopener")}
+                >
+                  <Linkedin className="w-4 h-4" />
+                  View LinkedIn Profile
+                </Button>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
