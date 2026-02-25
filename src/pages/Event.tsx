@@ -7,11 +7,15 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { timelineDays, parseTimeRange, HACKATHON_DATES } from "@/lib/schedule-utils";
 
 const judges = [
-  { name: "Kartik Ahuja", title: "Research Scientist", company: "Meta", track: "Communication & Human Experience" },
-  { name: "Edgar", title: "DevRel", company: "Speechmatics", track: "Communication & Human Experience" },
-  { name: "Ekta Sengar", title: "Product Manager", company: "Atlassian", track: "Business Automation" },
-  { name: "Tharsan", title: "Lead AI Engineer", company: "PMU", track: "Business Automation" },
-  { name: "Mohamed Ahmednah", title: "Founder & CTO", company: "Quicksort", track: "Developer & Infrastructure Tools" },
+  { name: "Kartik Ahuja", title: "Research Scientist", company: "Meta", track: "Communication & Human Experience", image: "https://www.activateyourvoice.tech/Partners/Kartik-Ahuja.jpeg" },
+  { name: "Edgars Adamovics", title: "DevRel", company: "Speechmatics", track: "Communication & Human Experience", image: "https://www.activateyourvoice.tech/Partners/85f63cc9-17b5-4e7a-af3d-caa8b6d3c76a.jpeg" },
+  { name: "Ekta Sengar", title: "Product Manager", company: "Atlassian", track: "Business Automation", image: "https://www.activateyourvoice.tech/Partners/Ekta-Sengar.jpeg" },
+  { name: "Tharsan Senthivel", title: "Lead AI Engineer", company: "PMU", track: "Business Automation", image: "https://www.activateyourvoice.tech/Partners/Tharsan.jpeg" },
+  { name: "Mohamed Ahmednah", title: "Founder & CTO", company: "Quicksort", track: "Developer & Infrastructure Tools", image: "https://media.licdn.com/dms/image/v2/D4E03AQE0zeV3pTztiQ/profile-displayphoto-scale_400_400/B4EZvYAKgJGgAk-/0/1768855481205?e=1772668800&v=beta&t=0GNc1wJg3IAIndAQThnbBQMLAT1BvGceRe1KbH4fNNs" },
+  { name: "Sylvain Cordier", title: "CPTO", company: "Stairling", track: "Developer & Infrastructure Tools", image: "https://media.licdn.com/dms/image/v2/D5603AQEz2_X28-_XUw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1727710393657?e=1773273600&v=beta&t=tSNfmyQXxg-jTd4rrZhcsZFafjqfh4xlbjr-ypBUJtg" },
+  { name: "Salim Louanjli", title: "Pre-Seed VC", company: "Campus Fund", track: "Business Automation", image: "https://media.licdn.com/dms/image/v2/C5603AQH8ABLKR5QBNw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1649406922052?e=1773273600&v=beta&t=0JA1qG4aSR_Tx3HEB9aFkj1-upjLd5pMtwHYmteRWuc" },
+  { name: "Aliénor Dartiguenave", title: "Director Of AI Products", company: "Foundever", track: "Communication & Human Experience", image: "https://media.licdn.com/dms/image/v2/D4E03AQFkiPq5KyI6WA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1680623104213?e=1773273600&v=beta&t=rCj7hFtqJ9y48O_qVD6nVgB7MABfflAeR6_HHyhOt_g" },
+  { name: "Robin Guignard-Perret", title: "CEO", company: "Tellers.ai", track: "Developer & Infrastructure Tools", image: "https://media.licdn.com/dms/image/v2/D4E03AQGP59fVrSo42w/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1706861829571?e=1773273600&v=beta&t=PfzvG5kD1cIkt6BPXD3PM8olwwH-0lr7LaxygJMV0aw" },
 ];
 
 const criteria = [
@@ -23,11 +27,12 @@ const criteria = [
 ];
 
 const partners = [
-  { name: "Speechmatics", role: "Title Partner", perks: "$3,000 credits per winning team + $3,000 special prize" },
+  { name: "Speechmatics", role: "Title Partner", perks: "$3,000 credits per winning team + $1,000 special prize" },
   { name: "OpenAI", role: "AI Partner", perks: "$1,000 API credits + 1yr ChatGPT Pro + GPT-5.3-Codex access" },
-  { name: "Backboard.io", role: "Platform Partner", perks: "$100 credits/person + \u20ac300 cash prize" },
+  { name: "Backboard.io", role: "Platform Partner", perks: "$100 credits/person + €300 cash prize" },
   { name: "Station F", role: "Space Partner", perks: "1 month access per winning team member" },
-  { name: "Builders Factory", role: "Co-Host", perks: "Venue & community partner" },
+  { name: "Builders Factory", role: "Co-Host", perks: "6-month founders residency + always-on HQ access + mentorship & community perks" },
+  { name: "API Days", role: "Community Partner", perks: "Speaking at FOST — invitation to speak at API Days' FOST Conferences + 5 tickets to FOST per winning team" },
 ];
 
 const ScheduleTab = () => {
@@ -187,8 +192,11 @@ const Event = () => {
               transition={{ duration: 0.3, delay: i * 0.06 }}
               className="glass-card-hover p-4 flex items-center gap-3"
             >
-              <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-white glow-avatar">
-                {judge.name.split(" ").map((n) => n[0]).join("")}
+              <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-white glow-avatar overflow-hidden shrink-0">
+                {judge.image
+                  ? <img src={judge.image} alt={judge.name} className="w-full h-full object-cover" />
+                  : judge.name.split(" ").map((n) => n[0]).join("")
+                }
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold">{judge.name}</h3>
@@ -197,9 +205,6 @@ const Event = () => {
               </div>
             </motion.div>
           ))}
-          <div className="glass-card p-4 text-center">
-            <p className="text-sm text-muted-foreground">+ more judges TBA</p>
-          </div>
         </TabsContent>
 
         {/* Rules & Criteria */}
@@ -230,18 +235,37 @@ const Event = () => {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Rules</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Hackathon Rules</h3>
             {[
-              "Teams of 3-6 people",
-              "Team registration deadline: Thursday Feb 26",
-              "Submission deadline: Sunday March 1, 5:00 PM",
-              "Must use at least one partner API (Speechmatics, OpenAI, Backboard)",
-              "All code must be written during the hackathon",
-              "7 teams max per track \u2014 first come first served",
-              "Top 2 per track \u2192 6 finalists \u2192 Winner announcement",
+              "Teams of 3–6 people (all members must be registered participants).",
+              "All work (code, prompts, architectures) must be created during the hackathon — no pre-built projects or old repos. You may come prepared with a clear idea and strategy though.",
+              "Each project must use at least one partner API (Speechmatics, OpenAI, Backboard, etc.).",
+              "All submissions are due by Sunday at 5:00 PM sharp; late submissions cannot be judged.",
+              "Max 7 teams per track; spots are first come, first served as teams confirm.",
+              "Top 2 teams per track advance to finals; final ranking is based on jury score + public vote (weights defined in judging criteria).",
+              "Teams must be transparent about which tools, models, and external assets they used in their project.",
+              "Plagiarism or reuse of someone else's code or IP without permission leads to disqualification.",
+              "By participating, you agree to our Code of Conduct: respectful, inclusive behavior is mandatory; harassment or discrimination of any kind is not tolerated.",
             ].map((rule, i) => (
               <div key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-                <span className="gradient-text font-bold mt-0.5">&bull;</span>
+                <span className="gradient-text font-bold mt-0.5 shrink-0">&bull;</span>
+                <span>{rule}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">🏠 House Rules (Builders Factory Overnight Residency)</h3>
+            {[
+              "Respect the space: treat Builders Factory like a home, not a venue (clean up after yourself, no damage to furniture, equipment, or walls).",
+              "Quiet zones: keep noise reasonable in work areas at night; use designated break zones for calls or loud conversations.",
+              "Sleep corners: rest areas with couches are for short naps, not for blocking others' access; be considerate when lights are dimmed.",
+              "No smoking, vaping, or open flames anywhere inside the venue (including windows and bathrooms); follow all safety instructions from staff. There is a terrasse for smokers.",
+              "Alcohol and substances: no illegal substances; if alcohol is present, consumption must remain moderate and compatible with a safe, professional environment.",
+              "Security & access: do not let unknown people into the building; badges/wristbands must be worn at all times and shown on request.",
+            ].map((rule, i) => (
+              <div key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                <span className="gradient-text font-bold mt-0.5 shrink-0">&bull;</span>
                 <span>{rule}</span>
               </div>
             ))}
