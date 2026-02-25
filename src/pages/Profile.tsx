@@ -48,6 +48,7 @@ const EDITABLE_FIELDS: EditableField[] = [
   { key: "company", label: "Company", type: "text", dbField: "company" },
   { key: "role", label: "Role", type: "text", dbField: "role" },
   { key: "linkedin", label: "LinkedIn", type: "text", dbField: "linkedin" },
+  { key: "discord", label: "Discord", type: "text", dbField: "discord" },
   { key: "dietary", label: "Dietary Needs", type: "single-pills", options: DIETARY_OPTIONS, dbField: "dietary" },
   { key: "looking_for", label: "Looking For", type: "pills", options: LOOKING_FOR_OPTIONS, dbField: "looking_for", isArray: true },
 ];

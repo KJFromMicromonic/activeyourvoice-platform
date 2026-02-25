@@ -21,6 +21,7 @@ interface PersonProfile {
   company: string | null;
   role: string | null;
   linkedin: string | null;
+  discord: string | null;
   avatar_url: string | null;
   team_status: string | null;
   onboarding_completed: boolean;
@@ -46,7 +47,7 @@ const People = () => {
 
       const { data } = await supabase
         .from("profiles")
-        .select("id, user_id, first_name, last_name, bio, skills, looking_for, company, role, linkedin, avatar_url, team_status, onboarding_completed")
+        .select("id, user_id, first_name, last_name, bio, skills, looking_for, company, role, linkedin, discord, avatar_url, team_status, onboarding_completed")
         .eq("onboarding_completed", true);
       if (data) setPeople(data);
 
@@ -334,16 +335,30 @@ const People = () => {
               )}
 
               {/* LinkedIn CTA */}
-              {selectedPerson.linkedin && (
-                <Button
-                  variant="gradient"
-                  className="w-full rounded-xl gap-2"
-                  onClick={() => window.open(selectedPerson.linkedin!, "_blank", "noopener")}
-                >
-                  <Linkedin className="w-4 h-4" />
-                  View LinkedIn Profile
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {selectedPerson.linkedin && (
+                  <Button
+                    variant="gradient"
+                    className="flex-1 rounded-xl gap-2"
+                    onClick={() => window.open(selectedPerson.linkedin!, "_blank", "noopener")}
+                  >
+                    <Linkedin className="w-4 h-4" />
+                    LinkedIn
+                  </Button>
+                )}
+                {selectedPerson.discord && (
+                  <Button
+                    variant="glass"
+                    className="flex-1 rounded-xl gap-2 border border-border"
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedPerson.discord!);
+                      toast.success("Discord username copied!");
+                    }}
+                  >
+                    Discord: {selectedPerson.discord}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </SheetContent>

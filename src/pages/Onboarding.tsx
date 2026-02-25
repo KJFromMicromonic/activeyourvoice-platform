@@ -44,6 +44,7 @@ const Onboarding = () => {
   const [lastName, setLastName] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [linkedin, setLinkedin] = useState("");
+  const [discord, setDiscord] = useState("");
   const [dietary, setDietary] = useState("");
   const [allergiesDetail, setAllergiesDetail] = useState("");
   const [meatPreference, setMeatPreference] = useState("");
@@ -120,6 +121,7 @@ const Onboarding = () => {
         avatar_url,
         skills,
         linkedin: linkedin || null,
+        discord: discord || null,
         dietary: dietary || null,
         allergies_detail: allergiesDetail || null,
         meat_preference: meatPreference || null,
@@ -327,6 +329,10 @@ const Onboarding = () => {
                   <div>
                     <label className="text-sm font-medium mb-2 block">LinkedIn URL</label>
                     <Input placeholder="https://linkedin.com/in/..." value={linkedin} onChange={(e) => setLinkedin(e.target.value)} className="glass-input" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Discord username</label>
+                    <Input placeholder="e.g. username#1234" value={discord} onChange={(e) => setDiscord(e.target.value)} className="glass-input" />
                   </div>
                 </div>
               )}

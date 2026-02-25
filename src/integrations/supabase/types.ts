@@ -21,6 +21,7 @@ export type Database = {
           bio: string | null
           company: string | null
           created_at: string
+          discord: string | null
           dietary: string | null
           drinks_beer: string | null
           expectations: string | null
@@ -49,6 +50,7 @@ export type Database = {
           bio?: string | null
           company?: string | null
           created_at?: string
+          discord?: string | null
           dietary?: string | null
           drinks_beer?: string | null
           expectations?: string | null
@@ -77,6 +79,7 @@ export type Database = {
           bio?: string | null
           company?: string | null
           created_at?: string
+          discord?: string | null
           dietary?: string | null
           drinks_beer?: string | null
           expectations?: string | null
