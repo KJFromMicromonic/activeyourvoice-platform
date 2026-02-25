@@ -54,7 +54,7 @@ export const timelineDays: TimelineDay[] = [
       {
         time: "3:00 PM \u2013 3:30 PM", event: "Opening ceremony \ud83c\udfa4", icon: PartyPopper, highlight: true,
         subItems: [
-          "Welcome speech: AIC + Builders Factory",
+          "Welcome speech: The AI Collective",
           "Introduction to hackathon rules & tracks",
           "Introduction to mentors, jury & judging criteria",
           "Agenda overview",
