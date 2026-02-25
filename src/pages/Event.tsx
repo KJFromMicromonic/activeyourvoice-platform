@@ -27,7 +27,7 @@ const partners = [
   { name: "OpenAI", role: "AI Partner", perks: "$1,000 API credits + 1yr ChatGPT Pro + GPT-5.3-Codex access" },
   { name: "Backboard.io", role: "Platform Partner", perks: "$100 credits/person + \u20ac300 cash prize" },
   { name: "Station F", role: "Space Partner", perks: "1 month access per winning team member" },
-  { name: "42 Entrepreneurs", role: "Co-Host", perks: "Venue & community partner" },
+  { name: "Builders Factory", role: "Co-Host", perks: "Venue & community partner" },
 ];
 
 const ScheduleTab = () => {
