@@ -277,7 +277,7 @@ const Event = () => {
           </div>
 
           <div className="glass-card p-4 space-y-2" style={{ borderColor: "hsl(263 84% 58% / 0.2)" }}>
-            <h3 className="text-sm font-semibold">\ud83c\udf92 What to Bring</h3>
+            <h3 className="text-sm font-semibold">🎒 What to Bring</h3>
             <div className="flex flex-wrap gap-2">
               {["Laptop + charger", "Mattress/blanket/pillow", "Headphones", "Water bottle", "Comfortable clothes", "ID"].map((item) => (
                 <Badge key={item} variant="glass" className="text-xs">{item}</Badge>
@@ -308,10 +308,10 @@ const Event = () => {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">\ud83c\udfc6 Prizes</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">🏆 Prizes</h3>
             <div className="glass-card p-5 space-y-4" style={{ background: "linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(59, 130, 246, 0.08))" }}>
               <div className="text-center">
-                <p className="gradient-text text-3xl font-extrabold">\u20ac100,000+</p>
+                <p className="gradient-text text-3xl font-extrabold">€100,000+</p>
                 <p className="text-xs text-muted-foreground mt-1">Total prize pool in cash + credits</p>
               </div>
               <div className="space-y-3">
