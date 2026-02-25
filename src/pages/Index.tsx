@@ -61,15 +61,15 @@ const quickActions: { icon: React.ElementType; label: string; to?: string; href?
 { icon: MessageSquare, label: "Talk to AURA", href: AURA_URL, disabled: true },
 { icon: Users, label: "Find a team", to: "/teams" },
 { icon: Rocket, label: "Browse people", to: "/people" },
-{ icon: Calendar, label: "View schedule", to: "/event" },
+{ icon: Calendar, label: "View event", to: "/event" },
 { icon: Send, label: "Submit project", to: "/projects" }];
 
 
 
 const CountdownUnit = ({ value, label }: {value: number;label: string;}) =>
 <div className="flex flex-col items-center flex-1">
-    <div className="px-3 py-2 md:py-4 w-full text-center rounded-xl glass-card">
-      <span className="text-3xl md:text-5xl lg:text-7xl font-bold tabular-nums">{String(value).padStart(2, "0")}</span>
+    <div className="px-3 py-2 md:py-3 w-full text-center rounded-xl glass-card">
+      <span className="text-2xl md:text-3xl lg:text-4xl font-bold tabular-nums">{String(value).padStart(2, "0")}</span>
     </div>
     <span className="text-[10px] md:text-xs text-muted-foreground mt-1.5 uppercase tracking-wider">{label}</span>
   </div>;
@@ -194,7 +194,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card p-5 md:p-8 glow-border">
+          className="glass-card p-5 md:p-6 glow-border">
 
           <div className="flex items-center gap-2 mb-4 md:mb-6">
             <Clock className="w-4 h-4 text-primary" />
