@@ -82,6 +82,8 @@ const Projects = () => {
     ? projects
     : projects.filter((p) => p.track === trackIdMap[activeTrack]);
 
+  const myProject = leaderTeam ? projects.find((p) => p.team_id === leaderTeam.id) : null;
+
   const handleSubmitted = async () => {
     await fetchProjects();
     setHasSubmitted(true);
@@ -121,6 +123,7 @@ const Projects = () => {
           <ProjectSubmitSheet
             teamId={leaderTeam.id}
             teamTrack={leaderTeam.track}
+            existingProject={myProject || null}
             onSubmitted={handleSubmitted}
           >
             <Button variant="glass" className="w-full rounded-xl border border-border">

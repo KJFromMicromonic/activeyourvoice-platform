@@ -5,6 +5,7 @@ import { Crown, Users, Edit2, Check, X, Search, ChevronLeft, Share2, UserPlus } 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import MeshBackground from "@/components/MeshBackground";
@@ -56,6 +57,10 @@ const TeamDetail = () => {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
   const [userApplication, setUserApplication] = useState<string | null>(null); // status
 
   useEffect(() => {
@@ -174,14 +179,72 @@ const TeamDetail = () => {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-          <h1 className="text-2xl font-bold">{team.name}</h1>
-          <Badge variant="skill">{team.track.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</Badge>
-          <p className="text-sm text-muted-foreground leading-relaxed">{team.description}</p>
-          <div className="flex flex-wrap gap-1">
-            {team.skills_needed.map((s) => (
-              <Badge key={s} variant="glass" className="text-[10px] px-2 py-0">{s}</Badge>
-            ))}
-          </div>
+          {editing ? (
+            <div className="space-y-3">
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="glass-input text-lg font-bold"
+                placeholder="Team name"
+              />
+              <Textarea
+                value={editDesc}
+                onChange={(e) => setEditDesc(e.target.value)}
+                className="glass-input min-h-[80px] resize-none text-sm"
+                placeholder="Team description"
+                maxLength={280}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="gradient"
+                  size="sm"
+                  className="flex-1 rounded-xl"
+                  disabled={editSaving || !editName.trim()}
+                  onClick={async () => {
+                    setEditSaving(true);
+                    const { error } = await supabase.from("teams").update({
+                      name: editName.trim(),
+                      description: editDesc.trim(),
+                    }).eq("id", team.id);
+                    if (error) {
+                      toast.error("Failed to save");
+                    } else {
+                      setTeam((prev) => prev ? { ...prev, name: editName.trim(), description: editDesc.trim() } : prev);
+                      toast.success("Team updated");
+                      setEditing(false);
+                    }
+                    setEditSaving(false);
+                  }}
+                >
+                  {editSaving ? "Saving..." : "Save"}
+                </Button>
+                <Button variant="glass" size="sm" className="rounded-xl border border-border" onClick={() => setEditing(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start justify-between">
+                <h1 className="text-2xl font-bold">{team.name}</h1>
+                {isLeader && (
+                  <button
+                    onClick={() => { setEditName(team.name); setEditDesc(team.description); setEditing(true); }}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <Badge variant="skill">{team.track.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</Badge>
+              <p className="text-sm text-muted-foreground leading-relaxed">{team.description}</p>
+              <div className="flex flex-wrap gap-1">
+                {team.skills_needed.map((s) => (
+                  <Badge key={s} variant="glass" className="text-[10px] px-2 py-0">{s}</Badge>
+                ))}
+              </div>
+            </>
+          )}
         </motion.div>
 
         {/* Members */}

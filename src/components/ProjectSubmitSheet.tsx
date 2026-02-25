@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,14 +20,24 @@ const titleStyle: React.CSSProperties = {
   backgroundClip: "text",
 };
 
+interface ExistingProject {
+  title: string;
+  tagline: string;
+  description: string | null;
+  demo_url: string | null;
+  repo_url: string | null;
+  tech_stack: string[];
+}
+
 interface ProjectSubmitSheetProps {
   teamId: string;
   teamTrack: string;
+  existingProject?: ExistingProject | null;
   onSubmitted: () => void;
   children: React.ReactNode;
 }
 
-const ProjectSubmitSheet = ({ teamId, teamTrack, onSubmitted, children }: ProjectSubmitSheetProps) => {
+const ProjectSubmitSheet = ({ teamId, teamTrack, existingProject, onSubmitted, children }: ProjectSubmitSheetProps) => {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -39,13 +49,17 @@ const ProjectSubmitSheet = ({ teamId, teamTrack, onSubmitted, children }: Projec
   const [techStack, setTechStack] = useState<string[]>([]);
 
   const reset = () => {
-    setTitle("");
-    setTagline("");
-    setDescription("");
-    setDemoUrl("");
-    setRepoUrl("");
-    setTechStack([]);
+    setTitle(existingProject?.title || "");
+    setTagline(existingProject?.tagline || "");
+    setDescription(existingProject?.description || "");
+    setDemoUrl(existingProject?.demo_url || "");
+    setRepoUrl(existingProject?.repo_url || "");
+    setTechStack(existingProject?.tech_stack || []);
   };
+
+  useEffect(() => {
+    if (open) reset();
+  }, [open, existingProject]);
 
   const toggleTech = (tech: string) => {
     setTechStack((prev) =>
