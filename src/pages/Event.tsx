@@ -19,11 +19,62 @@ const judges = [
 ];
 
 const criteria = [
-  { name: "Innovation & Originality", weight: 25, desc: "How novel is the approach? Does it push boundaries?" },
-  { name: "Technical Execution", weight: 25, desc: "Code quality, architecture, use of partner APIs" },
-  { name: "User Experience & Design", weight: 20, desc: "Is it intuitive, polished, delightful to use?" },
-  { name: "Impact & Real-World Viability", weight: 20, desc: "Could this become a real product?" },
-  { name: "Presentation & Demo", weight: 10, desc: "Clarity, storytelling, wow factor" },
+  {
+    name: "Conversation Feel & UX",
+    weight: 20,
+    bullets: [
+      "How natural, fast, and effortless is the interaction across both voice and interface?",
+      "Do the visuals, states, and prompts support the conversation (clear, uncluttered, obvious next step)?",
+    ],
+  },
+  {
+    name: "Task Completion & Autonomy",
+    weight: 15,
+    bullets: [
+      "Does the agent actually get real tasks done end‑to‑end with minimal hand‑holding?",
+      "Does it take intelligent actions via tools/APIs, not just talk?",
+    ],
+  },
+  {
+    name: "Memory & Adaptivity",
+    weight: 20,
+    bullets: [
+      "Does it remember relevant context (short‑term + long‑term) and change behavior accordingly?",
+      "Is there any loop for improving from interactions, even if simple?",
+    ],
+  },
+  {
+    name: "Real‑World Impact",
+    weight: 15,
+    bullets: [
+      "Is there a sharp problem and a clearly defined user?",
+      "Would this clearly matter in the real world (time saved, quality, delight)?",
+    ],
+  },
+  {
+    name: "Technical Depth & Difficulty",
+    weight: 10,
+    bullets: [
+      "How non‑trivial is the technical work (architecture, reasoning, robustness)?",
+      "Did they tackle something meaningfully hard vs a thin wrapper?",
+    ],
+  },
+  {
+    name: "Partner Utilisation",
+    weight: 10,
+    bullets: [
+      "Do they make smart, relevant use of partner tech (Speechmatics, Backboard, etc.)?",
+      "Is that integration essential to the solution, not just name‑dropping?",
+    ],
+  },
+  {
+    name: "Product Story & Craft",
+    weight: 10,
+    bullets: [
+      "One‑sentence clarity: \"It's for X, it does Y, and voice is the best way because Z.\"",
+      "Demo, UI, and flows are tight; trade‑offs are thoughtful; it feels like a real product, not just a 24‑hour project.",
+    ],
+  },
 ];
 
 const partners = [
@@ -31,7 +82,7 @@ const partners = [
   { name: "OpenAI", role: "AI Partner", perks: "$1,000 API credits + 1yr ChatGPT Pro + GPT-5.3-Codex access" },
   { name: "Backboard.io", role: "Platform Partner", perks: "$100 credits/person + €300 cash prize" },
   { name: "Station F", role: "Space Partner", perks: "1 month access per winning team member" },
-  { name: "Builders Factory", role: "Co-Host", perks: "6-month founders residency + always-on HQ access + mentorship & community perks" },
+  { name: "Builders Factory", role: "Co-Host", perks: "50% off 6-month founders residency + always-on HQ access + mentorship & community perks" },
   { name: "API Days", role: "Community Partner", perks: "Speaking at FOST — invitation to speak at API Days' FOST Conferences + 5 tickets to FOST per winning team" },
 ];
 
@@ -219,13 +270,20 @@ const Event = () => {
                 transition={{ duration: 0.3, delay: i * 0.06 }}
                 className="glass-card p-4"
               >
-                <div className="flex justify-between items-center mb-1">
+                <div className="flex justify-between items-center mb-2">
                   <h4 className="text-sm font-semibold">{c.name}</h4>
-                  <span className="gradient-text font-bold text-sm">{c.weight}%</span>
+                  <span className="gradient-text font-bold text-sm">0–{c.weight}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{c.desc}</p>
-                <div className="h-1.5 rounded-full bg-muted mt-2 overflow-hidden">
-                  <div className="h-full gradient-bar" style={{ width: `${c.weight * 4}%` }} />
+                <ul className="space-y-1">
+                  {c.bullets.map((bullet, k) => (
+                    <li key={k} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                      <span className="gradient-text font-bold shrink-0 mt-0.5">&bull;</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="h-1.5 rounded-full bg-muted mt-3 overflow-hidden">
+                  <div className="h-full gradient-bar" style={{ width: `${(c.weight / 20) * 100}%` }} />
                 </div>
               </motion.div>
             ))}
@@ -278,7 +336,8 @@ const Event = () => {
             </div>
             <p className="text-sm text-muted-foreground">18 rue la Condamine, 75017 Paris</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This is more than a hackathon &mdash; you'll be living together for 24 hours. Private offices for each team, rest areas with couches, and all meals provided.
+            For 24 hours, Builders Factory becomes your home base: 600m² of founders’ HQ, private spaces, chill zones and fuel, all engineered so you can ship your best work.
+
             </p>
           </div>
 
