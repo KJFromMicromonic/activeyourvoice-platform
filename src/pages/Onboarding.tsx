@@ -332,7 +332,7 @@ const Onboarding = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Discord username</label>
-                    <Input placeholder="e.g. username#1234" value={discord} onChange={(e) => setDiscord(e.target.value)} className="glass-input" />
+                    <Input placeholder="e.g. khajiit21sav" value={discord} onChange={(e) => setDiscord(e.target.value)} className="glass-input" />
                   </div>
                 </div>
               )}

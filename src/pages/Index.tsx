@@ -58,11 +58,11 @@ const calcCompletion = (profile: any) => {
 };
 
 const quickActions: { icon: React.ElementType; label: string; to?: string; href?: string; disabled?: boolean }[] = [
-{ icon: MessageSquare, label: "Talk to AURA", href: AURA_URL, disabled: true },
 { icon: Users, label: "Find a team", to: "/teams" },
 { icon: Rocket, label: "Browse people", to: "/people" },
 { icon: Calendar, label: "View event", to: "/event" },
-{ icon: Send, label: "Submit project", to: "/projects" }];
+{ icon: Send, label: "Submit project", to: "/projects" },
+{ icon: MessageSquare, label: "Talk to AURA", href: AURA_URL, disabled: true }];
 
 
 
@@ -189,23 +189,38 @@ const Index = () => {
           </h1>
         </motion.div>
 
-        {/* Countdown — always full width */}
+        {/* Countdown / Live status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="glass-card p-5 md:p-6 glow-border">
 
-          <div className="flex items-center gap-2 mb-4 md:mb-6">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
-          </div>
-          <div className="flex gap-3 md:gap-5">
-            <CountdownUnit value={countdown.days} label="Days" />
-            <CountdownUnit value={countdown.hours} label="Hrs" />
-            <CountdownUnit value={countdown.minutes} label="Min" />
-            <CountdownUnit value={countdown.seconds} label="Sec" />
-          </div>
+          {countdown.days === 0 && countdown.hours === 0 && countdown.minutes === 0 && countdown.seconds === 0 ? (
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-3 w-3 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-green-400 uppercase tracking-wider">Hackathon is Live</p>
+                <p className="text-xs text-muted-foreground">Build something incredible.</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-4 md:mb-6">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-medium">Hackathon starts in</span>
+              </div>
+              <div className="flex gap-3 md:gap-5">
+                <CountdownUnit value={countdown.days} label="Days" />
+                <CountdownUnit value={countdown.hours} label="Hrs" />
+                <CountdownUnit value={countdown.minutes} label="Min" />
+                <CountdownUnit value={countdown.seconds} label="Sec" />
+              </div>
+            </>
+          )}
         </motion.div>
 
         {/* Happening Now / Coming Up */}
@@ -253,22 +268,29 @@ const Index = () => {
           className="glass-card p-5 space-y-4"
           style={{ borderColor: "rgba(139, 92, 246, 0.15)" }}>
 
-          <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Your Status</h2>
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-foreground">Profile completion</span>
-              <span className="gradient-text font-bold text-base">{profileCompletion}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <motion.div
-                className="h-full gradient-bar"
-                initial={{ width: 0 }}
-                animate={{ width: `${profileCompletion}%` }}
-                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }} />
-
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">You're {profileCompletion}% crew-ready! Complete your profile to stand out</p>
-          </div>
+          {profileCompletion < 100 ? (
+            <>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Your Status</h2>
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-foreground">Profile completion</span>
+                  <span className="gradient-text font-bold text-base">{profileCompletion}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    className="h-full gradient-bar"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${profileCompletion}%` }}
+                    transition={{ duration: 1, delay: 0.5, ease: "easeOut" }} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Complete your profile to stand out &mdash; <button onClick={() => navigate("/profile")} className="text-primary hover:underline">finish now</button>
+                </p>
+              </div>
+            </>
+          ) : (
+            <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">Your Status</h2>
+          )}
           <div className="flex gap-3 text-sm">
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${isInTeam ? "bg-green-500" : "bg-amber-500 pulse-amber"}`} />

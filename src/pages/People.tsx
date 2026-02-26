@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Users, Sparkles, Linkedin, Briefcase, Building2 } from "lucide-react";
+import { Search, Users, Sparkles, Linkedin, Briefcase, Building2, UserCheck, UserX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const SKILLS = ["All", "Developer", "Designer", "Product", "AI/ML", "Data", "Business"];
+const STATUS_FILTERS = ["Everyone", "Looking for team", "In a team"];
 
 interface PersonProfile {
   id: string;
@@ -35,6 +36,7 @@ const People = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeSkill, setActiveSkill] = useState("All");
+  const [activeStatus, setActiveStatus] = useState("Everyone");
   const [people, setPeople] = useState<PersonProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<PersonProfile | null>(null);
@@ -55,7 +57,6 @@ const People = () => {
         const me = data.find((p) => p.user_id === user.id);
         if (me) setCurrentUser(me);
 
-        // Check if team leader
         const { data: membership } = await supabase
           .from("team_members")
           .select("role")
@@ -70,14 +71,17 @@ const People = () => {
     fetchData();
   }, []);
 
+  const lookingForTeam = (status: string | null) => !status || status === "No" || status === "Not yet";
+
   const filtered = people.filter((p) => {
     const name = `${p.first_name} ${p.last_name}`.toLowerCase();
-    const matchesSearch = name.includes(search.toLowerCase()) || (p.bio || "").toLowerCase().includes(search.toLowerCase()) || (p.company || "").toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = name.includes(search.toLowerCase()) || (p.bio || "").toLowerCase().includes(search.toLowerCase()) || (p.company || "").toLowerCase().includes(search.toLowerCase()) || (p.role || "").toLowerCase().includes(search.toLowerCase());
     const matchesSkill = activeSkill === "All" || (p.skills || []).some((s) => s.toLowerCase().includes(activeSkill.toLowerCase()));
-    return matchesSearch && matchesSkill;
+    const matchesStatus = activeStatus === "Everyone" ||
+      (activeStatus === "Looking for team" && lookingForTeam(p.team_status)) ||
+      (activeStatus === "In a team" && p.team_status === "Yes");
+    return matchesSearch && matchesSkill && matchesStatus;
   });
-
-  const lookingForTeam = (status: string | null) => !status || status === "No" || status === "Not yet";
 
   // Matching algorithm
   const getMatches = () => {
@@ -119,14 +123,18 @@ const People = () => {
 
   const matches = getMatches();
 
+  const lookingCount = people.filter((p) => lookingForTeam(p.team_status)).length;
+  const inTeamCount = people.filter((p) => p.team_status === "Yes").length;
+
   return (
     <div className="px-5 pt-12 pb-6 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-5">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-2xl font-bold">People</h1>
-          <div className="flex items-center gap-1.5 text-primary">
-            <Users className="w-4 h-4" />
-            <span className="text-sm font-semibold">{people.length} builders</span>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><UserX className="w-3 h-3 text-amber-400" />{lookingCount} looking</span>
+            <span className="flex items-center gap-1"><UserCheck className="w-3 h-3 text-green-400" />{inTeamCount} teamed</span>
+            <span className="flex items-center gap-1 text-primary font-semibold"><Users className="w-3 h-3" />{people.length}</span>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">Find your crew for the hackathon</p>
@@ -151,7 +159,8 @@ const People = () => {
               {matches.map((person) => (
                 <div
                   key={person.id}
-                  className="glass-card-hover p-3 min-w-[160px] flex flex-col items-center text-center gap-2 shrink-0"
+                  className="glass-card-hover p-3 min-w-[160px] flex flex-col items-center text-center gap-2 shrink-0 cursor-pointer"
+                  onClick={() => setSelectedPerson(person)}
                 >
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold gradient-primary glow-avatar overflow-hidden">
                     {person.avatar_url ? (
@@ -174,7 +183,7 @@ const People = () => {
                       variant="gradient"
                       size="sm"
                       className="w-full rounded-xl text-[10px] h-7 mt-auto"
-                      onClick={() => toast.success(`Invite sent to ${person.first_name}!`)}
+                      onClick={(e) => { e.stopPropagation(); toast.success(`Invite sent to ${person.first_name}!`); }}
                     >
                       Invite to team
                     </Button>
@@ -195,29 +204,57 @@ const People = () => {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search by name, skill, company..."
+          placeholder="Search by name, role, company..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-3 text-sm bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 placeholder:text-muted-foreground/50 transition-all"
         />
       </motion.div>
 
-      {/* Filter Pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {SKILLS.map((skill) => (
-          <button
-            key={skill}
-            onClick={() => setActiveSkill(skill)}
-            className={skill === activeSkill ? "pill-button-active shrink-0" : "pill-button shrink-0"}
-          >
-            {skill}
-          </button>
-        ))}
+      {/* Filter Pills — Skills + Status */}
+      <div className="space-y-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+          {SKILLS.map((skill) => (
+            <button
+              key={skill}
+              onClick={() => setActiveSkill(skill)}
+              className={skill === activeSkill ? "pill-button-active shrink-0" : "pill-button shrink-0"}
+            >
+              {skill}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+          {STATUS_FILTERS.map((s) => (
+            <button
+              key={s}
+              onClick={() => setActiveStatus(s)}
+              className={`shrink-0 text-xs px-3 py-1.5 rounded-full transition-all ${
+                s === activeStatus
+                  ? "bg-primary/20 text-primary font-medium border border-primary/30"
+                  : "text-muted-foreground border border-border hover:border-primary/20"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Results count */}
+      <p className="text-xs text-muted-foreground">{filtered.length} people</p>
 
       {/* Grid */}
       {loading ? (
-        <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="glass-card p-4 h-48 animate-pulse">
+              <div className="w-14 h-14 rounded-full bg-muted mx-auto mb-3" />
+              <div className="h-3 bg-muted rounded w-2/3 mx-auto mb-2" />
+              <div className="h-2 bg-muted rounded w-1/2 mx-auto" />
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {filtered.map((person, i) => (
@@ -225,22 +262,30 @@ const People = () => {
               key={person.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.15 + i * 0.05 }}
+              transition={{ duration: 0.4, delay: Math.min(i * 0.03, 0.3) }}
               className="glass-card-hover p-4 flex flex-col items-center text-center gap-2 cursor-pointer"
               onClick={() => setSelectedPerson(person)}
             >
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold gradient-primary glow-avatar overflow-hidden">
-                {person.avatar_url ? (
-                  <img src={person.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  getInitials(person.first_name, person.last_name)
-                )}
+              <div className="relative">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold gradient-primary glow-avatar overflow-hidden">
+                  {person.avatar_url ? (
+                    <img src={person.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    getInitials(person.first_name, person.last_name)
+                  )}
+                </div>
+                <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${
+                  person.team_status === "Yes" ? "bg-green-500" : "bg-amber-500"
+                }`} />
               </div>
               <div>
                 <h3 className="text-sm font-semibold leading-tight">{person.first_name} {person.last_name}</h3>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{person.company || ""}</p>
+                {(person.role || person.company) && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
+                    {person.role}{person.role && person.company ? " @ " : ""}{person.company}
+                  </p>
+                )}
               </div>
-              <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{person.bio || ""}</p>
               <div className="flex flex-wrap justify-center gap-1">
                 {(person.skills || []).slice(0, 2).map((s) => (
                   <Badge key={s} variant="skill" className="text-[10px] px-2 py-0">
@@ -292,9 +337,14 @@ const People = () => {
                       )}
                     </div>
                   )}
-                  {lookingForTeam(selectedPerson.team_status) && (
-                    <Badge variant="glass" className="text-[10px] px-2 py-0.5 mt-1">Looking for team</Badge>
-                  )}
+                  <Badge
+                    variant="glass"
+                    className={`text-[10px] px-2 py-0.5 mt-1 ${
+                      selectedPerson.team_status === "Yes" ? "border-green-500/30 text-green-400" : "border-amber-500/30 text-amber-400"
+                    }`}
+                  >
+                    {selectedPerson.team_status === "Yes" ? "In a team" : "Looking for team"}
+                  </Badge>
                 </div>
               </div>
 
@@ -334,7 +384,7 @@ const People = () => {
                 </div>
               )}
 
-              {/* LinkedIn CTA */}
+              {/* Connect buttons */}
               <div className="flex gap-2">
                 {selectedPerson.linkedin && (
                   <Button
@@ -355,10 +405,15 @@ const People = () => {
                       toast.success("Discord username copied!");
                     }}
                   >
-                    Discord: {selectedPerson.discord}
+                    @{selectedPerson.discord}
                   </Button>
                 )}
               </div>
+
+              {/* No contact info */}
+              {!selectedPerson.linkedin && !selectedPerson.discord && (
+                <p className="text-xs text-muted-foreground text-center">No contact info shared yet</p>
+              )}
             </div>
           )}
         </SheetContent>
