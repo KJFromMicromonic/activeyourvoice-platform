@@ -5,12 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import MeshBackground from "@/components/MeshBackground";
+import { toast } from "sonner";
 import Waveform from "@/components/Waveform";
 import { findCurrentEvent, findNextEvent } from "@/lib/schedule-utils";
 import { computeBadges, type EarnedBadge } from "@/lib/badges";
 
 const TARGET_DATE = new Date("2026-02-28T15:00:00+01:00");
-const AURA_URL = "https://concierge.activateyourvoice.tech";
+const AURA_URL = "https://assistant.activateyourvoice.tech";
 
 const titleStyle: React.CSSProperties = {
   fontFamily: "'Orbitron', sans-serif",
@@ -57,12 +58,12 @@ const calcCompletion = (profile: any) => {
   return Math.round(filled / total * 100);
 };
 
-const quickActions: { icon: React.ElementType; label: string; to?: string; href?: string; disabled?: boolean }[] = [
+const quickActions: { icon: React.ElementType; label: string; to?: string; href?: string; disabled?: boolean; action?: string }[] = [
+{ icon: MessageSquare, label: "Talk to AURA", action: "aura" },
 { icon: Users, label: "Find a team", to: "/teams" },
 { icon: Rocket, label: "Browse people", to: "/people" },
 { icon: Calendar, label: "View event", to: "/event" },
-{ icon: Send, label: "Submit project", to: "/projects" },
-{ icon: MessageSquare, label: "Talk to AURA", href: AURA_URL, disabled: true }];
+{ icon: Send, label: "Submit project", to: "/projects" }];
 
 
 
@@ -94,6 +95,16 @@ const Index = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+
+  const handleTalkToAura = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const url = `${AURA_URL}/?access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
+      window.open(url, "_blank", "noopener");
+    } else {
+      toast.error("Please sign in to talk to AURA");
+    }
+  };
   const [now, setNow] = useState(new Date());
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [badges, setBadges] = useState<EarnedBadge[]>([]);
@@ -310,11 +321,16 @@ const Index = () => {
           transition={{ duration: 0.5, delay: 0.3 }}>
 
           <div className="flex gap-2 overflow-x-auto md:flex-wrap pb-2 -mx-1 px-1 scrollbar-hide">
-            {quickActions.map(({ icon: Icon, label, to, href, disabled }) =>
+            {quickActions.map(({ icon: Icon, label, to, href, disabled, action }) =>
             <button
               key={label}
               disabled={disabled}
-              onClick={() => !disabled && (href ? window.open(href, "_blank", "noopener") : navigate(to!))}
+              onClick={() => {
+                if (disabled) return;
+                if (action === "aura") { handleTalkToAura(); return; }
+                if (href) { window.open(href, "_blank", "noopener"); return; }
+                if (to) navigate(to);
+              }}
               className={`pill-button flex items-center gap-2 whitespace-nowrap shrink-0 transition-all ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary/30 active:scale-95"}`}>
 
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${disabled ? "bg-muted" : "gradient-primary"}`}>
