@@ -229,9 +229,6 @@ const Event = () => {
                 </div>
               </motion.div>
             ))}
-            <div className="glass-card p-3 text-center">
-              <p className="text-xs text-muted-foreground">Finals = <span className="text-primary font-semibold">80% jury</span> + <span className="text-secondary font-semibold">20% public vote</span></p>
-            </div>
           </div>
 
           <div className="space-y-3">
