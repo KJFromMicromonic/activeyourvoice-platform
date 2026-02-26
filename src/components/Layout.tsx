@@ -1,13 +1,22 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Home, Users, Rocket, FolderOpen, User, Sun, Moon, LogOut } from "lucide-react";
+import { Home, Users, Rocket, FolderOpen, Calendar, User, Sun, Moon, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 
-const navItems = [
+const sidebarItems = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/people", icon: Users, label: "People" },
   { to: "/teams", icon: Rocket, label: "Teams" },
   { to: "/projects", icon: FolderOpen, label: "Projects" },
+  { to: "/event", icon: Calendar, label: "Event" },
+  { to: "/profile", icon: User, label: "Profile" },
+];
+
+const mobileNavItems = [
+  { to: "/", icon: Home, label: "Home" },
+  { to: "/people", icon: Users, label: "People" },
+  { to: "/teams", icon: Rocket, label: "Teams" },
+  { to: "/event", icon: Calendar, label: "Event" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
@@ -42,7 +51,7 @@ const Layout = () => {
           </span>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {sidebarItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -112,7 +121,7 @@ const Layout = () => {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/30 bg-background/90 backdrop-blur-xl">
         <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {mobileNavItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
