@@ -14,9 +14,9 @@ import { postActivity } from "@/lib/activity";
 const SKILLS = ["Frontend", "Backend", "Full-stack", "AI/ML", "Design", "Product", "Data Science", "DevOps", "Business/Strategy", "Voice/NLP", "Other"];
 
 const tracks = [
-  { id: "communication-human-experience", name: "Communication & Human Experience", icon: Mic, color: "from-purple-500 to-violet-600", maxTeams: 7 },
-  { id: "business-automation", name: "Business Automation", icon: MessageSquare, color: "from-blue-500 to-cyan-500", maxTeams: 7 },
-  { id: "developer-infrastructure-tools", name: "Developer & Infrastructure Tools", icon: Brain, color: "from-indigo-500 to-blue-600", maxTeams: 7 },
+  { id: "communication-human-experience", name: "Communication & Human Experience", icon: Mic, color: "from-purple-500 to-violet-600" },
+  { id: "business-automation", name: "Business Automation", icon: MessageSquare, color: "from-blue-500 to-cyan-500" },
+  { id: "developer-infrastructure-tools", name: "Developer & Infrastructure Tools", icon: Brain, color: "from-indigo-500 to-blue-600" },
 ];
 
 const titleStyle: React.CSSProperties = {
@@ -322,19 +322,13 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                     <div className="space-y-3">
                       {tracks.map((track) => {
                         const count = trackCounts[track.id] || 0;
-                        const isFull = count >= track.maxTeams;
                         const isSelected = selectedTrack === track.id;
                         return (
                           <button
                             key={track.id}
-                            onClick={() => !isFull && setSelectedTrack(track.id)}
-                            disabled={isFull}
+                            onClick={() => setSelectedTrack(track.id)}
                             className={`w-full p-4 rounded-2xl text-left transition-all duration-300 ${
-                              isSelected
-                                ? "glass-card glow-border"
-                                : isFull
-                                ? "glass-card opacity-40 cursor-not-allowed"
-                                : "glass-card-hover"
+                              isSelected ? "glass-card glow-border" : "glass-card-hover"
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -344,7 +338,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                               <div className="flex-1">
                                 <h3 className="font-semibold text-sm">{track.name}</h3>
                                 <p className="text-[11px] text-muted-foreground">
-                                  {isFull ? "Track full" : `${track.maxTeams - count} spots left`}
+                                  {count} team{count !== 1 ? "s" : ""} registered
                                 </p>
                               </div>
                               {isSelected && (

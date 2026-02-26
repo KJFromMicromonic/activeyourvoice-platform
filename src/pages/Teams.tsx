@@ -14,7 +14,7 @@ const tracksMeta = [
     name: "Communication & Human Experience",
     icon: Mic,
     description: "Build voice-first experiences that transform learning, connection, and human interaction.",
-    maxTeams: 7,
+    maxTeams: Infinity,
     color: "from-purple-500 to-violet-600",
   },
   {
@@ -22,7 +22,7 @@ const tracksMeta = [
     name: "Business Automation",
     icon: MessageSquare,
     description: "Automate real business workflows end-to-end with intelligent voice and conversational AI.",
-    maxTeams: 7,
+    maxTeams: Infinity,
     color: "from-blue-500 to-cyan-500",
   },
   {
@@ -30,7 +30,7 @@ const tracksMeta = [
     name: "Developer & Infrastructure Tools",
     icon: Brain,
     description: "Build tools that developers would actually adopt — voice-powered dev workflows, agents, and infrastructure.",
-    maxTeams: 7,
+    maxTeams: Infinity,
     color: "from-indigo-500 to-blue-600",
   },
 ];
@@ -132,16 +132,12 @@ const Teams = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-sm">{track.name}</h3>
-                      <p className="text-[11px] text-muted-foreground">{count}/{track.maxTeams} teams registered</p>
+                      <p className="text-[11px] text-muted-foreground">{count} team{count !== 1 ? "s" : ""} registered</p>
                     </div>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{track.description}</p>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full gradient-bar transition-all duration-500" style={{ width: `${(count / track.maxTeams) * 100}%` }} />
-                </div>
-                <p className="text-[10px] text-primary font-medium">{track.maxTeams - count} spots left</p>
 
                 {isExpanded && (
                   <div className="pt-2 border-t border-border/30 space-y-2">
