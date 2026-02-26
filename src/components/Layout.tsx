@@ -5,18 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 const sidebarItems = [
   { to: "/", icon: Home, label: "Home" },
+  { to: "/event", icon: Calendar, label: "Event" },
   { to: "/people", icon: Users, label: "People" },
   { to: "/teams", icon: Rocket, label: "Teams" },
   { to: "/projects", icon: FolderOpen, label: "Projects" },
-  { to: "/event", icon: Calendar, label: "Event" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
 const mobileNavItems = [
   { to: "/", icon: Home, label: "Home" },
+  { to: "/event", icon: Calendar, label: "Event" },
   { to: "/people", icon: Users, label: "People" },
   { to: "/teams", icon: Rocket, label: "Teams" },
-  { to: "/event", icon: Calendar, label: "Event" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 

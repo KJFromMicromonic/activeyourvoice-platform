@@ -36,13 +36,12 @@ export const timelineDays: TimelineDay[] = [
     ],
   },
   {
-    date: "Thursday, Feb 26",
+    date: "February, Feb 27",
     label: "Deadline Day",
     emoji: "\u{1F4C5}",
     isMilestone: true,
     events: [
       { time: "", event: "Deadline: Team submission", icon: AlertTriangle, highlight: true },
-      { time: "", event: "Codex Access \u2014 organisation ID distributed", icon: Laptop },
     ],
   },
   {
@@ -73,7 +72,7 @@ export const timelineDays: TimelineDay[] = [
     label: "Hackathon Day 2",
     emoji: "\u{1F4C5}",
     events: [
-      { time: "9:00 AM", event: "Coffee \u2615", icon: Coffee },
+      { time: "9:00 AM", event: "Breakfast & Coffee \u2615", icon: Coffee },
       { time: "9:00 AM \u2013 12:30 PM", event: "Working session #3 \ud83d\udcbb", icon: Laptop },
       { time: "12:30 PM \u2013 1:30 PM", event: "Lunch \ud83c\udf7d\ufe0f", icon: Utensils },
       { time: "12:30 PM \u2013 5:00 PM", event: "Final working session \ud83d\udcbb", icon: Laptop },

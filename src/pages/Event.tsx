@@ -84,6 +84,7 @@ const partners = [
   { name: "Station F", role: "Space Partner", perks: "1 month access per winning team member" },
   { name: "Builders Factory", role: "Co-Host", perks: "50% off 6-month founders residency + always-on HQ access + mentorship & community perks" },
   { name: "API Days", role: "Community Partner", perks: "Speaking at FOST — invitation to speak at API Days' FOST Conferences + 5 tickets to FOST per winning team" },
+  { name: "Lovable", role: "Partner", perks: "Pro Plan 1 (100 credits) for the build" },
 ];
 
 const ScheduleTab = () => {
@@ -337,7 +338,6 @@ const Event = () => {
             <p className="text-sm text-muted-foreground">18 rue la Condamine, 75017 Paris</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
             For 24 hours, Builders Factory becomes your home base: 600m² of founders’ HQ, private spaces, chill zones and fuel, all engineered so you can ship your best work.
-
             </p>
           </div>
 
