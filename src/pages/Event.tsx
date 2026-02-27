@@ -16,6 +16,7 @@ const judges = [
   { name: "Salim Louanjli", title: "Pre-Seed VC", company: "Campus Fund", track: "Business Automation", image: "https://media.licdn.com/dms/image/v2/C5603AQH8ABLKR5QBNw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1649406922052?e=1773273600&v=beta&t=0JA1qG4aSR_Tx3HEB9aFkj1-upjLd5pMtwHYmteRWuc" },
   { name: "Aliénor Dartiguenave", title: "Director Of AI Products", company: "Foundever", track: "Communication & Human Experience", image: "https://media.licdn.com/dms/image/v2/D4E03AQFkiPq5KyI6WA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1680623104213?e=1773273600&v=beta&t=rCj7hFtqJ9y48O_qVD6nVgB7MABfflAeR6_HHyhOt_g" },
   { name: "Robin Guignard-Perret", title: "CEO", company: "Tellers.ai", track: "Developer & Infrastructure Tools", image: "https://media.licdn.com/dms/image/v2/D4E03AQGP59fVrSo42w/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1706861829571?e=1773273600&v=beta&t=PfzvG5kD1cIkt6BPXD3PM8olwwH-0lr7LaxygJMV0aw" },
+  { name: "Katrin Redmann", title: "Head Of Transformation ", company: "SAP France", track: "Business Automation", image: "https://media.licdn.com/dms/image/v2/C5603AQFBNJMtURoQkw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1662579089814?e=1773878400&v=beta&t=28KgpVHjLsjjYQ2FLNSgdhQNSpKORk-eoQ9DikyIfUA" },
 ];
 
 const criteria = [
