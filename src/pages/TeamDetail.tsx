@@ -27,6 +27,7 @@ interface TeamData {
   skills_needed: string[];
   max_members: number;
   leader_id: string;
+  openai_org_id: string | null;
 }
 
 interface MemberData {
@@ -73,6 +74,7 @@ const TeamDetail = () => {
   const [editSkills, setEditSkills] = useState<string[]>([]);
   const [editSize, setEditSize] = useState(4);
   const [editTrack, setEditTrack] = useState("");
+  const [editOpenaiOrg, setEditOpenaiOrg] = useState("");
   const [editSaving, setEditSaving] = useState(false);
   const [userApplication, setUserApplication] = useState<string | null>(null); // status
 
@@ -261,6 +263,18 @@ const TeamDetail = () => {
                 <p className="text-center text-[10px] text-muted-foreground mt-1">3-6 members</p>
               </div>
 
+              {/* OpenAI Org ID */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">OpenAI Organization ID</label>
+                <Input
+                  value={editOpenaiOrg}
+                  onChange={(e) => setEditOpenaiOrg(e.target.value)}
+                  className="glass-input text-sm"
+                  placeholder="org-..."
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">From platform.openai.com &rarr; Settings &rarr; Organization</p>
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   variant="gradient"
@@ -275,6 +289,7 @@ const TeamDetail = () => {
                       track: editTrack,
                       skills_needed: editSkills,
                       max_members: editSize,
+                      openai_org_id: editOpenaiOrg.trim() || null,
                     }).eq("id", team.id);
                     if (error) {
                       toast.error("Failed to save");
@@ -286,6 +301,7 @@ const TeamDetail = () => {
                         track: editTrack,
                         skills_needed: editSkills,
                         max_members: editSize,
+                        openai_org_id: editOpenaiOrg.trim() || null,
                       } : prev);
                       toast.success("Team updated");
                       setEditing(false);
@@ -312,6 +328,7 @@ const TeamDetail = () => {
                       setEditTrack(team.track);
                       setEditSkills([...team.skills_needed]);
                       setEditSize(team.max_members);
+                      setEditOpenaiOrg(team.openai_org_id || "");
                       setEditing(true);
                     }}
                     className="text-muted-foreground hover:text-foreground transition-colors p-1"
@@ -327,6 +344,11 @@ const TeamDetail = () => {
                   <Badge key={s} variant="glass" className="text-[10px] px-2 py-0">{s}</Badge>
                 ))}
               </div>
+              {team.openai_org_id && (
+                <p className="text-[11px] text-muted-foreground">
+                  OpenAI Org: <span className="font-mono text-foreground/70">{team.openai_org_id}</span>
+                </p>
+              )}
             </>
           )}
         </motion.div>

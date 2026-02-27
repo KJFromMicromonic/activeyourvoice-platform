@@ -179,6 +179,7 @@ export type Database = {
           leader_id: string
           max_members: number
           name: string
+          openai_org_id: string | null
           skills_needed: string[]
           track: string
           updated_at: string
@@ -190,6 +191,7 @@ export type Database = {
           leader_id: string
           max_members?: number
           name: string
+          openai_org_id?: string | null
           skills_needed?: string[]
           track: string
           updated_at?: string
@@ -201,6 +203,7 @@ export type Database = {
           leader_id?: string
           max_members?: number
           name?: string
+          openai_org_id?: string | null
           skills_needed?: string[]
           track?: string
           updated_at?: string
