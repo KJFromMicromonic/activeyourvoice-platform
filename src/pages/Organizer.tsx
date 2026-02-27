@@ -8,21 +8,32 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Users, Utensils, Send, Trophy } from "lucide-react";
+import { Users, Utensils, Send, Trophy, Search, UserCheck, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { postActivity } from "@/lib/activity";
 import { rankProjects, CRITERIA } from "@/lib/scoring";
 import MeshBackground from "@/components/MeshBackground";
 
 interface Profile {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  bio: string | null;
+  company: string | null;
+  role: string | null;
+  linkedin: string | null;
+  discord: string | null;
+  avatar_url: string | null;
   onboarding_completed: boolean;
   team_status: string | null;
   skills: string[] | null;
+  looking_for: string[] | null;
   dietary: string | null;
   meat_preference: string | null;
   allergies_detail: string | null;
   drinks_beer: string | null;
   staying_overnight: string | null;
+  created_at: string;
 }
 
 const Organizer = () => {
@@ -30,6 +41,9 @@ const Organizer = () => {
   const [teamCount, setTeamCount] = useState(0);
   const [memberCount, setMemberCount] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Participants
+  const [participantSearch, setParticipantSearch] = useState("");
 
   // Post form state
   const [title, setTitle] = useState("");
@@ -43,7 +57,7 @@ const Organizer = () => {
   useEffect(() => {
     const fetchData = async () => {
       const [profilesRes, teamsRes, membersRes] = await Promise.all([
-        supabase.from("profiles").select("onboarding_completed, team_status, skills, dietary, meat_preference, allergies_detail, drinks_beer, staying_overnight"),
+        supabase.from("profiles").select("*"),
         supabase.from("teams").select("id", { count: "exact", head: true }),
         supabase.from("team_members").select("id", { count: "exact", head: true }),
       ]);
@@ -146,7 +160,7 @@ const Organizer = () => {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <MeshBackground />
-      <div className="relative z-10 px-5 pt-12 pb-28 md:pb-12 max-w-lg md:max-w-3xl mx-auto space-y-6">
+      <div className="relative z-10 px-5 pt-12 pb-28 md:pb-12 max-w-lg md:max-w-4xl lg:max-w-6xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-2xl font-bold">Organizer Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Aggregated participant data</p>
@@ -165,6 +179,9 @@ const Organizer = () => {
               </TabsTrigger>
               <TabsTrigger value="post" className="flex-1 gap-1.5">
                 <Send className="w-3.5 h-3.5" /> Post
+              </TabsTrigger>
+              <TabsTrigger value="participants" className="flex-1 gap-1.5">
+                <UserCheck className="w-3.5 h-3.5" /> People
               </TabsTrigger>
               <TabsTrigger value="scores" className="flex-1 gap-1.5">
                 <Trophy className="w-3.5 h-3.5" /> Scores
@@ -294,6 +311,114 @@ const Organizer = () => {
                   {posting ? "Posting..." : "Post Announcement"}
                 </Button>
               </div>
+            </TabsContent>
+
+            {/* Participants Tab */}
+            <TabsContent value="participants" className="space-y-4 mt-4">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, company, role, skill..."
+                    value={participantSearch}
+                    onChange={(e) => setParticipantSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground/50 transition-all"
+                  />
+                </div>
+                <Button
+                  variant="glass"
+                  size="sm"
+                  className="rounded-xl border border-border gap-1.5 shrink-0"
+                  onClick={() => {
+                    const rows = onboarded.map((p) => [
+                      p.first_name, p.last_name, p.company || "", p.role || "",
+                      (p.skills || []).join("; "), p.team_status || "", p.discord || "", p.linkedin || "",
+                      p.dietary || "", p.staying_overnight || "", p.created_at,
+                    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","));
+                    const csv = ["First Name,Last Name,Company,Role,Skills,Team Status,Discord,LinkedIn,Dietary,Overnight,Registered", ...rows].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = "participants.csv"; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download className="w-3.5 h-3.5" /> CSV
+                </Button>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-border/30">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border/30 bg-muted/30">
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Name</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap hidden md:table-cell">Company</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap hidden lg:table-cell">Role</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Skills</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap">Team</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap hidden md:table-cell">Discord</th>
+                      <th className="text-left py-2.5 px-3 text-xs font-semibold text-muted-foreground whitespace-nowrap hidden lg:table-cell">Dietary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const q = participantSearch.toLowerCase();
+                      const filtered = onboarded.filter((p) =>
+                        !q ||
+                        `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) ||
+                        (p.company || "").toLowerCase().includes(q) ||
+                        (p.role || "").toLowerCase().includes(q) ||
+                        (p.skills || []).some((s) => s.toLowerCase().includes(q))
+                      );
+                      return filtered.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">No participants found</td></tr>
+                      ) : (
+                        filtered.map((p) => (
+                          <tr key={p.user_id} className="border-b border-border/20 hover:bg-muted/20 transition-colors">
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-[10px] font-bold text-white shrink-0 overflow-hidden">
+                                  {p.avatar_url ? (
+                                    <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                                  ) : (
+                                    `${(p.first_name || "")[0] || ""}${(p.last_name || "")[0] || ""}`.toUpperCase()
+                                  )}
+                                </div>
+                                <span className="font-medium text-sm">{p.first_name} {p.last_name}</span>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap hidden md:table-cell">{p.company || "—"}</td>
+                            <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap hidden lg:table-cell">{p.role || "—"}</td>
+                            <td className="py-2.5 px-3">
+                              <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                {(p.skills || []).slice(0, 3).map((s) => (
+                                  <Badge key={s} variant="skill" className="text-[9px] px-1.5 py-0">{s}</Badge>
+                                ))}
+                                {(p.skills || []).length > 3 && (
+                                  <Badge variant="glass" className="text-[9px] px-1.5 py-0">+{(p.skills || []).length - 3}</Badge>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <span className={`text-xs font-medium ${p.team_status === "Yes" ? "text-green-400" : "text-amber-400"}`}>
+                                {p.team_status === "Yes" ? "In team" : "Looking"}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-muted-foreground text-xs whitespace-nowrap hidden md:table-cell">
+                              {p.discord ? `@${p.discord}` : "—"}
+                            </td>
+                            <td className="py-2.5 px-3 text-muted-foreground text-xs whitespace-nowrap hidden lg:table-cell">
+                              {p.dietary || "—"}
+                            </td>
+                          </tr>
+                        ))
+                      );
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[10px] text-muted-foreground text-right">{onboarded.length} registered participants</p>
             </TabsContent>
 
             {/* Scores Tab */}
