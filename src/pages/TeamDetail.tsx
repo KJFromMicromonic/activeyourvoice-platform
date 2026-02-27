@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Crown, Users, Edit2, Check, X, Search, ChevronLeft, Share2, UserPlus } from "lucide-react";
+import { Crown, Users, Edit2, Check, X, Search, ChevronLeft, Share2, UserPlus, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import MeshBackground from "@/components/MeshBackground";
 import { postActivity } from "@/lib/activity";
+
+const SKILLS = ["Frontend", "Backend", "Full-stack", "AI/ML", "Design", "Product", "Data Science", "DevOps", "Business/Strategy", "Voice/NLP", "Other"];
+
+const TRACKS = [
+  { id: "communication-human-experience", name: "Communication & Human Experience" },
+  { id: "business-automation", name: "Business Automation" },
+  { id: "developer-infrastructure-tools", name: "Developer & Infrastructure Tools" },
+];
 
 interface TeamData {
   id: string;
@@ -60,6 +68,9 @@ const TeamDetail = () => {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [editSkills, setEditSkills] = useState<string[]>([]);
+  const [editSize, setEditSize] = useState(4);
+  const [editTrack, setEditTrack] = useState("");
   const [editSaving, setEditSaving] = useState(false);
   const [userApplication, setUserApplication] = useState<string | null>(null); // status
 
@@ -180,7 +191,7 @@ const TeamDetail = () => {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           {editing ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
@@ -194,22 +205,86 @@ const TeamDetail = () => {
                 placeholder="Team description"
                 maxLength={280}
               />
+
+              {/* Track */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Track</label>
+                <div className="flex flex-wrap gap-2">
+                  {TRACKS.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setEditTrack(t.id)}
+                      className={editTrack === t.id ? "pill-button-active text-xs" : "pill-button text-xs"}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Skills needed */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Skills needed</label>
+                <div className="flex flex-wrap gap-2">
+                  {SKILLS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setEditSkills((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])}
+                      className={editSkills.includes(s) ? "pill-button-active text-xs" : "pill-button text-xs"}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Team size */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Team size</label>
+                <div className="flex items-center justify-center gap-6">
+                  <button
+                    onClick={() => setEditSize(Math.max(3, editSize - 1))}
+                    className="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:bg-muted/50 transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="text-2xl font-bold gradient-text min-w-[32px] text-center">{editSize}</span>
+                  <button
+                    onClick={() => setEditSize(Math.min(6, editSize + 1))}
+                    className="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:bg-muted/50 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-center text-[10px] text-muted-foreground mt-1">3-6 members</p>
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   variant="gradient"
                   size="sm"
                   className="flex-1 rounded-xl"
-                  disabled={editSaving || !editName.trim()}
+                  disabled={editSaving || !editName.trim() || !editTrack || editSkills.length === 0}
                   onClick={async () => {
                     setEditSaving(true);
                     const { error } = await supabase.from("teams").update({
                       name: editName.trim(),
                       description: editDesc.trim(),
+                      track: editTrack,
+                      skills_needed: editSkills,
+                      max_members: editSize,
                     }).eq("id", team.id);
                     if (error) {
                       toast.error("Failed to save");
                     } else {
-                      setTeam((prev) => prev ? { ...prev, name: editName.trim(), description: editDesc.trim() } : prev);
+                      setTeam((prev) => prev ? {
+                        ...prev,
+                        name: editName.trim(),
+                        description: editDesc.trim(),
+                        track: editTrack,
+                        skills_needed: editSkills,
+                        max_members: editSize,
+                      } : prev);
                       toast.success("Team updated");
                       setEditing(false);
                     }
@@ -229,7 +304,14 @@ const TeamDetail = () => {
                 <h1 className="text-2xl font-bold">{team.name}</h1>
                 {isLeader && (
                   <button
-                    onClick={() => { setEditName(team.name); setEditDesc(team.description); setEditing(true); }}
+                    onClick={() => {
+                      setEditName(team.name);
+                      setEditDesc(team.description);
+                      setEditTrack(team.track);
+                      setEditSkills([...team.skills_needed]);
+                      setEditSize(team.max_members);
+                      setEditing(true);
+                    }}
                     className="text-muted-foreground hover:text-foreground transition-colors p-1"
                   >
                     <Edit2 className="w-4 h-4" />
