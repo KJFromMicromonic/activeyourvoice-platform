@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Crown, Users, Edit2, Check, X, Search, ChevronLeft, Share2, UserPlus, Minus, Plus } from "lucide-react";
+import { Crown, Users, Edit2, Check, X, Search, ChevronLeft, Share2, UserPlus, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,8 @@ const TeamDetail = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editSkills, setEditSkills] = useState<string[]>([]);
@@ -414,6 +416,56 @@ const TeamDetail = () => {
                 </div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Delete team (leader only) */}
+        {isLeader && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            {!confirmDelete ? (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-medium text-red-400/60 hover:text-red-400 hover:bg-red-500/5 transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Team
+              </button>
+            ) : (
+              <div className="glass-card p-4 border-red-500/20 space-y-3">
+                <p className="text-sm text-red-400 font-semibold">Are you sure?</p>
+                <p className="text-xs text-muted-foreground">This will permanently delete the team, remove all members, and cancel pending applications. This cannot be undone.</p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="glass"
+                    size="sm"
+                    className="flex-1 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"
+                    disabled={deleting}
+                    onClick={async () => {
+                      setDeleting(true);
+                      // Reset team_status for all members
+                      const memberIds = members.map((m) => m.user_id);
+                      if (memberIds.length > 0) {
+                        await supabase.from("profiles").update({ team_status: "No" }).in("user_id", memberIds);
+                      }
+                      // Delete team (cascades to team_members, team_applications via FK)
+                      const { error } = await supabase.from("teams").delete().eq("id", team!.id);
+                      if (error) {
+                        toast.error("Failed to delete team");
+                        setDeleting(false);
+                      } else {
+                        toast.success("Team deleted");
+                        navigate("/teams");
+                      }
+                    }}
+                  >
+                    {deleting ? "Deleting..." : "Yes, delete"}
+                  </Button>
+                  <Button variant="glass" size="sm" className="flex-1 rounded-xl border border-border" onClick={() => setConfirmDelete(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
