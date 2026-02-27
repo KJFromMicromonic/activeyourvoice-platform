@@ -98,8 +98,9 @@ const TeamDetail = () => {
         setMembers(enriched);
       }
 
-      // Fetch applications (if leader)
-      if (user && teamData.leader_id === user.id) {
+      // Fetch applications (if leader or co-leader)
+      const userRole = membersData?.find((m: any) => m.user_id === user?.id)?.role;
+      if (user && (teamData.leader_id === user.id || userRole === "co-leader")) {
         const { data: apps } = await supabase.from("team_applications").select("*").eq("team_id", teamId!).eq("status", "pending");
         if (apps) {
           const enrichedApps = await Promise.all(apps.map(async (a: any) => {
@@ -111,7 +112,7 @@ const TeamDetail = () => {
       }
 
       // Check if current user has applied
-      if (user && teamData.leader_id !== user.id) {
+      if (user && teamData.leader_id !== user.id && userRole !== "co-leader") {
         const { data: app } = await supabase.from("team_applications").select("status").eq("team_id", teamId!).eq("user_id", user.id).single();
         if (app) setUserApplication(app.status);
       }
@@ -122,6 +123,8 @@ const TeamDetail = () => {
   }, [teamId]);
 
   const isLeader = currentUserId === team?.leader_id;
+  const isCoLeader = members.some((m) => m.user_id === currentUserId && m.role === "co-leader");
+  const canManage = isLeader || isCoLeader;
   const isMember = members.some((m) => m.user_id === currentUserId);
   const emptySlots = team ? team.max_members - members.length : 0;
 
@@ -320,7 +323,7 @@ const TeamDetail = () => {
             <>
               <div className="flex items-start justify-between">
                 <h1 className="text-2xl font-bold">{team.name}</h1>
-                {isLeader && (
+                {canManage && (
                   <button
                     onClick={() => {
                       setEditName(team.name);
@@ -372,6 +375,7 @@ const TeamDetail = () => {
                   <div className="flex items-center gap-1.5">
                     <p className="text-sm font-semibold truncate">{m.profile?.first_name} {m.profile?.last_name}</p>
                     {m.role === "leader" && <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                    {m.role === "co-leader" && <Badge variant="skill" className="text-[8px] px-1.5 py-0">Co-Leader</Badge>}
                   </div>
                   <div className="flex flex-wrap gap-1 mt-0.5">
                     {(m.profile?.skills || []).slice(0, 3).map((s) => (
@@ -379,6 +383,32 @@ const TeamDetail = () => {
                     ))}
                   </div>
                 </div>
+                {isLeader && m.role !== "leader" && (
+                  <button
+                    onClick={async () => {
+                      const newRole = m.role === "co-leader" ? "member" : "co-leader";
+                      const { error } = await supabase
+                        .from("team_members")
+                        .update({ role: newRole })
+                        .eq("team_id", teamId!)
+                        .eq("user_id", m.user_id);
+                      if (error) {
+                        toast.error("Failed to update role");
+                      } else {
+                        setMembers((prev) => prev.map((mem) =>
+                          mem.user_id === m.user_id ? { ...mem, role: newRole } : mem
+                        ));
+                        toast.success(newRole === "co-leader"
+                          ? `${m.profile?.first_name} is now a co-leader`
+                          : `${m.profile?.first_name} is now a member`
+                        );
+                      }
+                    }}
+                    className="text-[10px] px-2.5 py-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all shrink-0"
+                  >
+                    {m.role === "co-leader" ? "Demote" : "Promote"}
+                  </button>
+                )}
               </div>
             ))}
             {Array.from({ length: emptySlots }).map((_, i) => (
@@ -393,7 +423,7 @@ const TeamDetail = () => {
         </motion.div>
 
         {/* Applications (leader only) */}
-        {isLeader && applications.length > 0 && (
+        {canManage && applications.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-muted-foreground">
               Pending Applications ({applications.length})
@@ -492,7 +522,7 @@ const TeamDetail = () => {
         )}
 
         {/* Apply button (non-members only) */}
-        {!isMember && !isLeader && (
+        {!isMember && !canManage && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             {userApplication === "pending" ? (
               <Button variant="glass" className="w-full rounded-xl border border-white/10 opacity-60 cursor-default" disabled>
