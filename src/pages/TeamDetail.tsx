@@ -383,31 +383,54 @@ const TeamDetail = () => {
                     ))}
                   </div>
                 </div>
-                {isLeader && m.role !== "leader" && (
-                  <button
-                    onClick={async () => {
-                      const newRole = m.role === "co-leader" ? "member" : "co-leader";
-                      const { error } = await supabase
-                        .from("team_members")
-                        .update({ role: newRole })
-                        .eq("team_id", teamId!)
-                        .eq("user_id", m.user_id);
-                      if (error) {
-                        toast.error("Failed to update role");
-                      } else {
-                        setMembers((prev) => prev.map((mem) =>
-                          mem.user_id === m.user_id ? { ...mem, role: newRole } : mem
-                        ));
-                        toast.success(newRole === "co-leader"
-                          ? `${m.profile?.first_name} is now a co-leader`
-                          : `${m.profile?.first_name} is now a member`
-                        );
-                      }
-                    }}
-                    className="text-[10px] px-2.5 py-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all shrink-0"
-                  >
-                    {m.role === "co-leader" ? "Demote" : "Promote"}
-                  </button>
+                {canManage && m.role !== "leader" && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    {isLeader && (
+                      <button
+                        onClick={async () => {
+                          const newRole = m.role === "co-leader" ? "member" : "co-leader";
+                          const { error } = await supabase
+                            .from("team_members")
+                            .update({ role: newRole })
+                            .eq("team_id", teamId!)
+                            .eq("user_id", m.user_id);
+                          if (error) {
+                            toast.error("Failed to update role");
+                          } else {
+                            setMembers((prev) => prev.map((mem) =>
+                              mem.user_id === m.user_id ? { ...mem, role: newRole } : mem
+                            ));
+                            toast.success(newRole === "co-leader"
+                              ? `${m.profile?.first_name} is now a co-leader`
+                              : `${m.profile?.first_name} is now a member`
+                            );
+                          }
+                        }}
+                        className="text-[10px] px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                      >
+                        {m.role === "co-leader" ? "Demote" : "Promote"}
+                      </button>
+                    )}
+                    <button
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from("team_members")
+                          .delete()
+                          .eq("team_id", teamId!)
+                          .eq("user_id", m.user_id);
+                        if (error) {
+                          toast.error("Failed to remove member");
+                        } else {
+                          await supabase.from("profiles").update({ team_status: "No" }).eq("user_id", m.user_id);
+                          setMembers((prev) => prev.filter((mem) => mem.user_id !== m.user_id));
+                          toast.success(`${m.profile?.first_name} removed from team`);
+                        }
+                      }}
+                      className="text-[10px] px-2 py-1 rounded-lg text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
