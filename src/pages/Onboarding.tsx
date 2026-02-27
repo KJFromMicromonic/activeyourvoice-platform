@@ -539,7 +539,7 @@ const Onboarding = () => {
 
         {/* Full-width Next CTA anchored to bottom for steps 1-5 */}
         {isStepScreen && (
-          <div className="px-5 pb-8 space-y-2 max-w-lg md:max-w-xl mx-auto w-full">
+          <div className="px-5 pb-8 space-y-2 max-w-lg md:max-w-xl mx-auto w-full" style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom, 2rem))" }}>
             {step === 5 && (
               <button
                 className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"

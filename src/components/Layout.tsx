@@ -142,7 +142,7 @@ const Layout = () => {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/30 bg-background/90 backdrop-blur-xl">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/30 bg-background/90 backdrop-blur-xl" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
           {mobileNavItems.map(({ to, icon: Icon, label }) => (
             <NavLink
