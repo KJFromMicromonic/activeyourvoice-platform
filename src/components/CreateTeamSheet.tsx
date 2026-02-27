@@ -41,6 +41,7 @@ interface PersonResult {
   skills: string[] | null;
   avatar_url: string | null;
   bio: string | null;
+  team_status?: string | null;
 }
 
 interface CreateTeamSheetProps {
@@ -90,24 +91,37 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
     fetchCounts();
   }, [open]);
 
-  // Search people
+  // Fetch teamless participants when step 3 opens
+  const [allTeamless, setAllTeamless] = useState<PersonResult[]>([]);
   useEffect(() => {
-    if (step !== 3 || !searchQuery.trim()) { setSearchResults([]); return; }
-    const timeout = setTimeout(async () => {
+    if (step !== 3) return;
+    const fetchTeamless = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, user_id, first_name, last_name, skills, avatar_url, bio")
+        .select("id, user_id, first_name, last_name, skills, avatar_url, bio, team_status")
         .eq("onboarding_completed", true)
-        .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
-        .limit(10);
+        .neq("team_status", "Yes");
       if (data) {
-        // Filter out current user
         const { data: { user } } = await supabase.auth.getUser();
-        setSearchResults(data.filter((p) => p.user_id !== user?.id));
+        setAllTeamless(data.filter((p: any) => p.user_id !== user?.id));
       }
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [searchQuery, step]);
+    };
+    fetchTeamless();
+  }, [step]);
+
+  // Filter by search query client-side
+  useEffect(() => {
+    if (step !== 3) { setSearchResults([]); return; }
+    if (!searchQuery.trim()) {
+      setSearchResults(allTeamless);
+      return;
+    }
+    const q = searchQuery.toLowerCase();
+    setSearchResults(allTeamless.filter((p) =>
+      `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) ||
+      (p.skills || []).some((s) => s.toLowerCase().includes(q))
+    ));
+  }, [searchQuery, step, allTeamless]);
 
   const reset = () => {
     setStep(0);
@@ -371,7 +385,8 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                         className="glass-input pl-10"
                       />
                     </div>
-                    <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                    <p className="text-[10px] text-muted-foreground">{searchResults.length} participant{searchResults.length !== 1 ? "s" : ""} looking for a team</p>
+                    <div className="space-y-2 max-h-[340px] overflow-y-auto">
                       {searchResults.map((person) => {
                         const isInvited = invitedIds.has(person.user_id);
                         return (
@@ -407,7 +422,7 @@ const CreateTeamSheet = ({ children, onTeamCreated }: CreateTeamSheetProps) => {
                           </div>
                         );
                       })}
-                      {searchQuery.trim() && searchResults.length === 0 && (
+                      {searchResults.length === 0 && (
                         <p className="text-xs text-muted-foreground text-center py-4">No participants found</p>
                       )}
                     </div>
