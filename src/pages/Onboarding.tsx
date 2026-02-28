@@ -192,11 +192,11 @@ const Onboarding = () => {
   const isStepScreen = step >= 1 && step <= 5;
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-background">
+    <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       {/* Persistent background — never re-renders between steps */}
       {(isStepScreen || step === 0 || step === 6) && <MeshBackground />}
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col flex-1 min-h-0">
         {/* Persistent waveform + progress for steps 1-5 */}
         {isStepScreen && (
           <div className="px-5 pt-4 space-y-3 max-w-lg md:max-w-xl mx-auto w-full">
@@ -223,7 +223,7 @@ const Onboarding = () => {
         )}
 
         {/* Content area */}
-        <div className={`flex-1 flex flex-col ${isStepScreen ? "pt-4" : "items-center justify-center"} px-5 pb-4 overflow-y-auto`}>
+        <div className={`flex-1 min-h-0 flex flex-col ${isStepScreen ? "pt-4" : "items-center justify-center"} px-5 pb-4 overflow-y-auto`}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={step}
@@ -539,7 +539,7 @@ const Onboarding = () => {
 
         {/* Full-width Next CTA anchored to bottom for steps 1-5 */}
         {isStepScreen && (
-          <div className="px-5 pb-8 space-y-2 max-w-lg md:max-w-xl mx-auto w-full" style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom, 2rem))" }}>
+          <div className="shrink-0 px-5 pb-8 space-y-2 max-w-lg md:max-w-xl mx-auto w-full" style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom, 2rem))" }}>
             {step === 5 && (
               <button
                 className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
