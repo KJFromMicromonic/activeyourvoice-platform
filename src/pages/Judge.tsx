@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Trophy, Edit2 } from "lucide-react";
+import { ExternalLink, Github, Trophy, Edit2, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import MeshBackground from "@/components/MeshBackground";
 import JudgeScoringSheet from "@/components/JudgeScoringSheet";
@@ -51,7 +51,6 @@ const Judge = () => {
         if (teams) teams.forEach((t: any) => { teamNames[t.id] = t.name; });
       }
       let enriched = projectsData.map((p: any) => ({ ...p, team_name: teamNames[p.team_id] || "Unknown" }));
-      // Filter by assigned tracks (if any assigned; empty means show all)
       if (assignedTracks.length > 0) {
         enriched = enriched.filter((p: any) => assignedTracks.includes(p.track));
       }
@@ -75,38 +74,41 @@ const Judge = () => {
 
   const scoredProjectIds = new Set(Object.keys(myScores));
   const ranked = rankProjects(projects, allScores as any);
+  const scoredCount = projects.filter((p) => scoredProjectIds.has(p.id)).length;
 
   const formatTrack = (track: string) => track.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <div className="relative min-h-screen overflow-hidden">
       <MeshBackground />
-      <div className="relative z-10 px-5 pt-12 pb-28 md:pb-12 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-6">
+      <div className="relative z-10 px-4 pt-10 pb-28 md:pb-12 max-w-lg md:max-w-3xl lg:max-w-5xl mx-auto space-y-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl font-bold">Judging Panel</h1>
-          <p className="text-sm text-muted-foreground mt-1">7 criteria &middot; 100 points total</p>
+          <h1 className="text-xl font-bold">Judging Panel</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            {scoredCount}/{projects.length} scored &middot; 7 criteria &middot; 100 pts
+          </p>
         </motion.div>
 
         {loading ? (
           <p className="text-muted-foreground text-center py-12">Loading...</p>
         ) : (
           <Tabs defaultValue="score">
-            <TabsList className="w-full">
-              <TabsTrigger value="score" className="flex-1">Projects</TabsTrigger>
-              <TabsTrigger value="mine" className="flex-1">My Scores</TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex-1 gap-1">
-                <Trophy className="w-3.5 h-3.5" /> Leaderboard
+            <TabsList className="w-full h-auto p-1">
+              <TabsTrigger value="score" className="flex-1 text-xs py-2">Projects</TabsTrigger>
+              <TabsTrigger value="mine" className="flex-1 text-xs py-2">My Scores</TabsTrigger>
+              <TabsTrigger value="leaderboard" className="flex-1 text-xs py-2 gap-1">
+                <Trophy className="w-3 h-3" /> Board
               </TabsTrigger>
             </TabsList>
 
             {/* Projects to Score */}
-            <TabsContent value="score" className="mt-4">
+            <TabsContent value="score" className="mt-3">
               {projects.length === 0 ? (
                 <div className="glass-card p-8 text-center">
                   <p className="text-sm text-muted-foreground">No projects submitted yet</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-3">
                   {projects.map((project, i) => {
                     const scored = scoredProjectIds.has(project.id);
                     const score = myScores[project.id];
@@ -117,13 +119,16 @@ const Judge = () => {
                         key={project.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.05 }}
+                        transition={{ duration: 0.3, delay: i * 0.04 }}
                         className="glass-card-hover p-4 space-y-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm truncate">{project.title}</h3>
-                            <p className="text-xs text-muted-foreground truncate">{project.tagline}</p>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-sm truncate">{project.title}</h3>
+                              {scored && <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{project.team_name}</p>
                           </div>
                           {scored && (
                             <div className="text-center shrink-0">
@@ -133,20 +138,17 @@ const Judge = () => {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <Badge variant="skill" className="text-[10px]">{formatTrack(project.track)}</Badge>
-                          <span className="text-[11px] text-muted-foreground">{project.team_name}</span>
-                        </div>
+                        <Badge variant="skill" className="text-[10px]">{formatTrack(project.track)}</Badge>
 
                         <div className="flex gap-2">
                           {project.demo_url && (
-                            <Button variant="glass" size="sm" className="rounded-xl border border-border text-xs flex-1"
+                            <Button variant="glass" size="sm" className="rounded-xl border border-border text-xs flex-1 h-9"
                               onClick={() => window.open(project.demo_url!, "_blank", "noopener")}>
                               <ExternalLink className="w-3 h-3" /> Demo
                             </Button>
                           )}
                           {project.repo_url && (
-                            <Button variant="glass" size="sm" className="rounded-xl border border-border text-xs flex-1"
+                            <Button variant="glass" size="sm" className="rounded-xl border border-border text-xs flex-1 h-9"
                               onClick={() => window.open(project.repo_url!, "_blank", "noopener")}>
                               <Github className="w-3 h-3" /> Repo
                             </Button>
@@ -154,8 +156,11 @@ const Judge = () => {
                         </div>
 
                         <JudgeScoringSheet project={project} existingScore={score || null} onScored={fetchData}>
-                          <Button variant={scored ? "glass" : "gradient"} className={`w-full rounded-xl text-sm ${scored ? "border border-border" : ""}`}>
-                            {scored ? <><Edit2 className="w-3.5 h-3.5" /> Edit Score</> : "Score This Project"}
+                          <Button
+                            variant={scored ? "glass" : "gradient"}
+                            className={`w-full rounded-xl text-sm h-11 ${scored ? "border border-border" : ""}`}
+                          >
+                            {scored ? <><Edit2 className="w-3.5 h-3.5" /> Edit Score ({total}/100)</> : "Score This Project"}
                           </Button>
                         </JudgeScoringSheet>
                       </motion.div>
@@ -166,7 +171,7 @@ const Judge = () => {
             </TabsContent>
 
             {/* My Scores */}
-            <TabsContent value="mine" className="mt-4 space-y-3">
+            <TabsContent value="mine" className="mt-3 space-y-3">
               {Object.keys(myScores).length === 0 ? (
                 <div className="glass-card p-8 text-center">
                   <p className="text-sm text-muted-foreground">You haven't scored any projects yet</p>
@@ -189,18 +194,18 @@ const Judge = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                      {/* Criteria breakdown — 2 cols on mobile, 7 on desktop */}
+                      <div className="grid grid-cols-2 gap-2">
                         {CRITERIA.map((c) => (
-                          <div key={c.key} className="text-center">
-                            <p className="text-xs font-bold">{score[c.key] ?? 0}</p>
-                            <p className="text-[9px] text-muted-foreground">/{c.max}</p>
-                            <p className="text-[8px] text-muted-foreground leading-tight truncate">{c.label.split(" ")[0]}</p>
+                          <div key={c.key} className="flex items-center justify-between glass-card p-2 rounded-lg">
+                            <span className="text-[10px] text-muted-foreground truncate mr-2">{c.label}</span>
+                            <span className="text-xs font-bold shrink-0">{score[c.key] ?? 0}<span className="text-muted-foreground font-normal">/{c.max}</span></span>
                           </div>
                         ))}
                       </div>
 
                       <JudgeScoringSheet project={project} existingScore={score} onScored={fetchData}>
-                        <Button variant="glass" size="sm" className="w-full rounded-xl border border-border text-xs">
+                        <Button variant="glass" size="sm" className="w-full rounded-xl border border-border text-xs h-10">
                           <Edit2 className="w-3 h-3" /> Edit Score
                         </Button>
                       </JudgeScoringSheet>
@@ -211,7 +216,7 @@ const Judge = () => {
             </TabsContent>
 
             {/* Leaderboard */}
-            <TabsContent value="leaderboard" className="mt-4 space-y-3">
+            <TabsContent value="leaderboard" className="mt-3 space-y-3">
               {ranked.length === 0 || ranked.every((r) => r.judgeCount === 0) ? (
                 <div className="glass-card p-8 text-center">
                   <p className="text-sm text-muted-foreground">No scores submitted yet</p>
@@ -222,7 +227,7 @@ const Judge = () => {
                     key={r.projectId}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`glass-card p-4 space-y-2 ${r.rank <= 3 ? "glow-border" : ""}`}
+                    className={`glass-card p-4 space-y-3 ${r.rank <= 3 ? "glow-border" : ""}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
@@ -235,25 +240,25 @@ const Judge = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-sm truncate">{r.title}</h3>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-muted-foreground">{r.teamName}</span>
-                          <Badge variant="skill" className="text-[9px]">{formatTrack(r.track)}</Badge>
-                        </div>
+                        <p className="text-[11px] text-muted-foreground">{r.teamName}</p>
                       </div>
                       <div className="text-center shrink-0">
                         <p className="text-xl font-black gradient-text">{r.avgTotal}</p>
-                        <p className="text-[9px] text-muted-foreground">{r.judgeCount} judge{r.judgeCount !== 1 ? "s" : ""}</p>
+                        <p className="text-[9px] text-muted-foreground">{r.judgeCount}j</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-4 md:grid-cols-7 gap-2 pt-1">
+                    {/* Criteria breakdown — stacked on mobile */}
+                    <div className="grid grid-cols-2 gap-1.5">
                       {CRITERIA.map((c) => (
-                        <div key={c.key} className="text-center">
-                          <div className="h-1 rounded-full bg-muted overflow-hidden mb-1">
-                            <div className="h-full gradient-bar" style={{ width: `${(r.avgScores[c.key] / c.max) * 100}%` }} />
+                        <div key={c.key} className="flex items-center justify-between px-2 py-1">
+                          <span className="text-[9px] text-muted-foreground truncate mr-1">{c.label}</span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <div className="w-12 h-1 rounded-full bg-muted overflow-hidden">
+                              <div className="h-full gradient-bar" style={{ width: `${(r.avgScores[c.key] / c.max) * 100}%` }} />
+                            </div>
+                            <span className="text-[9px] font-medium w-8 text-right">{r.avgScores[c.key]}/{c.max}</span>
                           </div>
-                          <p className="text-[10px] font-medium">{r.avgScores[c.key]}/{c.max}</p>
-                          <p className="text-[8px] text-muted-foreground leading-tight truncate">{c.label.split(" ")[0]}</p>
                         </div>
                       ))}
                     </div>
@@ -264,7 +269,7 @@ const Judge = () => {
               {ranked.some((r) => r.judgeCount > 0) && (
                 <div className="glass-card p-3 text-center">
                   <p className="text-[10px] text-muted-foreground">
-                    Tie-break: 1) Memory &amp; Adaptivity &rarr; 2) Conversation Feel &rarr; 3) Judge vote
+                    Tie-break: 1) Memory &rarr; 2) Conversation &rarr; 3) Judge vote
                   </p>
                 </div>
               )}

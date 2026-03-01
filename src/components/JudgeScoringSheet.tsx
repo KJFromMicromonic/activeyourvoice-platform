@@ -99,7 +99,7 @@ const JudgeScoringSheet = ({ project, existingScore, onScored, children }: Judge
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent
-        className="h-[90vh] border-t border-primary/20"
+        className="h-[92vh] border-t border-primary/20"
         style={{
           background: "rgba(var(--glass-bg), 0.02)",
           backdropFilter: "blur(20px)",
@@ -108,36 +108,24 @@ const JudgeScoringSheet = ({ project, existingScore, onScored, children }: Judge
       >
         <div className="flex flex-col h-full overflow-hidden">
           {/* Header */}
-          <div className="px-5 pt-4 pb-3 border-b border-border/30">
-            <div className="flex items-start justify-between gap-3 max-w-2xl mx-auto">
+          <div className="px-4 pt-3 pb-2 border-b border-border/30">
+            <div className="flex items-center justify-between gap-3 max-w-2xl mx-auto">
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold uppercase tracking-wide truncate" style={titleStyle}>{project.title}</h2>
-                <p className="text-xs text-muted-foreground truncate">{project.team_name}</p>
-                <div className="flex gap-2 mt-1">
-                  {project.demo_url && (
-                    <button onClick={() => window.open(project.demo_url!, "_blank", "noopener")} className="text-[10px] text-primary flex items-center gap-1 hover:underline">
-                      <ExternalLink className="w-3 h-3" /> Demo
-                    </button>
-                  )}
-                  {project.repo_url && (
-                    <button onClick={() => window.open(project.repo_url!, "_blank", "noopener")} className="text-[10px] text-primary flex items-center gap-1 hover:underline">
-                      <Github className="w-3 h-3" /> Repo
-                    </button>
-                  )}
-                </div>
+                <h2 className="text-base font-bold uppercase tracking-wide truncate" style={titleStyle}>{project.title}</h2>
+                <p className="text-[11px] text-muted-foreground truncate">{project.team_name}</p>
               </div>
               <div className="text-center shrink-0">
-                <p className="text-3xl font-black gradient-text">{total}</p>
-                <p className="text-[10px] text-muted-foreground">/100</p>
+                <p className="text-2xl font-black gradient-text">{total}</p>
+                <p className="text-[9px] text-muted-foreground">/100</p>
               </div>
             </div>
           </div>
 
           {/* Sliders */}
-          <div className="flex-1 overflow-y-auto px-5 pb-6">
-            <div className="max-w-2xl mx-auto space-y-5 pt-4">
+          <div className="flex-1 overflow-y-auto px-4 pb-6">
+            <div className="max-w-2xl mx-auto space-y-3 pt-3">
               {CRITERIA.map((c) => (
-                <div key={c.key} className="glass-card p-4 space-y-3">
+                <div key={c.key} className="glass-card p-3 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold">{c.label}</h3>
@@ -145,14 +133,16 @@ const JudgeScoringSheet = ({ project, existingScore, onScored, children }: Judge
                     </div>
                     <span className="text-lg font-bold gradient-text shrink-0">{scores[c.key]}<span className="text-xs text-muted-foreground font-normal">/{c.max}</span></span>
                   </div>
-                  <Slider
-                    min={0}
-                    max={c.max}
-                    step={1}
-                    value={[scores[c.key]]}
-                    onValueChange={([v]) => setScores((prev) => ({ ...prev, [c.key]: v }))}
-                    className="w-full"
-                  />
+                  <div className="py-1">
+                    <Slider
+                      min={0}
+                      max={c.max}
+                      step={1}
+                      value={[scores[c.key]]}
+                      onValueChange={([v]) => setScores((prev) => ({ ...prev, [c.key]: v }))}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
               ))}
 
@@ -170,7 +160,7 @@ const JudgeScoringSheet = ({ project, existingScore, onScored, children }: Judge
           </div>
 
           {/* Submit */}
-          <div className="px-5 pb-6 pt-2 border-t border-border/30">
+          <div className="shrink-0 px-4 pt-2 border-t border-border/30" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 1rem))" }}>
             <div className="max-w-2xl mx-auto">
               <Button
                 variant="gradient"
