@@ -35,6 +35,13 @@ const Judge = () => {
   const fetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Get judge's assigned tracks
+    let assignedTracks: string[] = [];
+    if (user) {
+      const { data: profile } = await supabase.from("profiles").select("judge_tracks").eq("user_id", user.id).single();
+      assignedTracks = profile?.judge_tracks || [];
+    }
+
     const { data: projectsData } = await supabase.from("projects").select("*").order("submitted_at", { ascending: false });
     if (projectsData) {
       const teamIds = [...new Set(projectsData.map((p: any) => p.team_id))];
@@ -43,7 +50,12 @@ const Judge = () => {
         const { data: teams } = await supabase.from("teams").select("id, name").in("id", teamIds);
         if (teams) teams.forEach((t: any) => { teamNames[t.id] = t.name; });
       }
-      setProjects(projectsData.map((p: any) => ({ ...p, team_name: teamNames[p.team_id] || "Unknown" })));
+      let enriched = projectsData.map((p: any) => ({ ...p, team_name: teamNames[p.team_id] || "Unknown" }));
+      // Filter by assigned tracks (if any assigned; empty means show all)
+      if (assignedTracks.length > 0) {
+        enriched = enriched.filter((p: any) => assignedTracks.includes(p.track));
+      }
+      setProjects(enriched);
     }
 
     const { data: scoresData } = await supabase.from("judge_scores").select("*");

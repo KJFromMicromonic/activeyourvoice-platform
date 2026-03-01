@@ -30,6 +30,7 @@ export type Database = {
           id: string
           is_judge: boolean
           is_organizer: boolean
+          judge_tracks: string[]
           languages: string[] | null
           last_name: string
           linkedin: string | null
@@ -59,6 +60,7 @@ export type Database = {
           id?: string
           is_judge?: boolean
           is_organizer?: boolean
+          judge_tracks?: string[]
           languages?: string[] | null
           last_name?: string
           linkedin?: string | null
@@ -88,6 +90,7 @@ export type Database = {
           id?: string
           is_judge?: boolean
           is_organizer?: boolean
+          judge_tracks?: string[]
           languages?: string[] | null
           last_name?: string
           linkedin?: string | null
