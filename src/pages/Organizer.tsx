@@ -44,6 +44,8 @@ const Organizer = () => {
 
   // Participants
   const [participantSearch, setParticipantSearch] = useState("");
+  // Scores filter
+  const [scoreTrackFilter, setScoreTrackFilter] = useState("All");
 
   // Post form state
   const [title, setTitle] = useState("");
@@ -423,12 +425,38 @@ const Organizer = () => {
 
             {/* Scores Tab */}
             <TabsContent value="scores" className="space-y-3 mt-4">
-              {ranked.length === 0 || ranked.every((r) => r.judgeCount === 0) ? (
-                <div className="glass-card p-8 text-center">
-                  <p className="text-sm text-muted-foreground">No scores submitted yet</p>
-                </div>
-              ) : (
-                ranked.filter((r) => r.judgeCount > 0).map((r) => {
+              {/* Track filter */}
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+                {["All", "Communication & Human Experience", "Business Automation", "Developer & Infrastructure Tools"].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setScoreTrackFilter(t)}
+                    className={t === scoreTrackFilter ? "pill-button-active shrink-0 text-xs" : "pill-button shrink-0 text-xs"}
+                  >
+                    {t === "All" ? "All Tracks" : t}
+                  </button>
+                ))}
+              </div>
+
+              {(() => {
+                const trackIdMap: Record<string, string> = {
+                  "Communication & Human Experience": "communication-human-experience",
+                  "Business Automation": "business-automation",
+                  "Developer & Infrastructure Tools": "developer-infrastructure-tools",
+                };
+                const filteredRanked = scoreTrackFilter === "All"
+                  ? ranked.filter((r) => r.judgeCount > 0)
+                  : ranked.filter((r) => r.judgeCount > 0 && r.track === trackIdMap[scoreTrackFilter]);
+
+                // Re-rank within the filtered set
+                filteredRanked.forEach((r, i) => { r.rank = i + 1; });
+
+                return filteredRanked.length === 0 ? (
+                  <div className="glass-card p-8 text-center">
+                    <p className="text-sm text-muted-foreground">No scores submitted yet</p>
+                  </div>
+                ) : (<>
+                {filteredRanked.map((r) => {
                   const formatTrack = (t: string) => t.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                   return (
                     <div
@@ -469,15 +497,14 @@ const Organizer = () => {
                       </div>
                     </div>
                   );
-                })
-              )}
-              {ranked.some((r) => r.judgeCount > 0) && (
+                })}
                 <div className="glass-card p-3 text-center">
                   <p className="text-[10px] text-muted-foreground">
                     Tie-break: 1) Memory &amp; Adaptivity &rarr; 2) Conversation Feel &rarr; 3) Judge vote
                   </p>
                 </div>
-              )}
+                </>);
+              })()}
             </TabsContent>
           </Tabs>
         )}
