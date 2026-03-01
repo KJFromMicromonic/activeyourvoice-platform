@@ -93,11 +93,12 @@ const ProjectSubmitSheet = ({ teamId, teamTrack, existingProject, onSubmitted, c
         toast.error("Failed to submit project");
         console.error(error);
       } else {
-        toast.success("Project submitted!");
+        toast.success("Project submitted! Opening Speechmatics feedback form...");
         await postActivity("project_submitted", title.trim(), `submitted "${title.trim()}"`);
         onSubmitted();
         setOpen(false);
         reset();
+        window.open("https://hackathon-quick-feedback-form.vercel.app/", "_blank", "noopener");
       }
     } catch (err) {
       console.error(err);
