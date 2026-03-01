@@ -68,8 +68,8 @@ const ProjectSubmitSheet = ({ teamId, teamTrack, existingProject, onSubmitted, c
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !tagline.trim()) {
-      toast.error("Title and tagline are required");
+    if (!title.trim() || !tagline.trim() || !repoUrl.trim()) {
+      toast.error("Title, tagline, and GitHub repo link are required");
       return;
     }
     setSaving(true);
@@ -156,7 +156,7 @@ const ProjectSubmitSheet = ({ teamId, teamTrack, existingProject, onSubmitted, c
                   className="glass-input"
                 />
                 <Input
-                  placeholder="Repo URL (optional)"
+                  placeholder="GitHub Repo URL *"
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
                   className="glass-input"
@@ -191,7 +191,7 @@ const ProjectSubmitSheet = ({ teamId, teamTrack, existingProject, onSubmitted, c
               variant="gradient"
               className="w-full rounded-xl h-12"
               onClick={handleSubmit}
-              disabled={saving || !title.trim() || !tagline.trim()}
+              disabled={saving || !title.trim() || !tagline.trim() || !repoUrl.trim()}
             >
               {saving ? "Submitting..." : "Submit Project"}
             </Button>
